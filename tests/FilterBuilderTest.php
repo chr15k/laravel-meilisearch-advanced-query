@@ -98,4 +98,9 @@ final class FilterBuilderTest extends TestCase
     {
         $this->assertSame('name IS EMPTY', FilterBuilder::whereIsEmpty('name')->compile());
     }
+
+    public function testBasicWhereToQuery()
+    {
+        $this->assertSame('count 1 TO 10', FilterBuilder::whereTo('count', 1, 10)->compile());
+    }
 }

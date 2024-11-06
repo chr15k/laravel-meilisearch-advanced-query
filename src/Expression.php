@@ -98,9 +98,9 @@ class Expression implements FilterSegment
         return sprintf('%s IS EMPTY', $field);
     }
 
-    protected function between(string $field, $from, $to): string
+    protected function to(string $field, mixed $value): string
     {
-        return sprintf('%s >= %s AND %s <= %s', $field, $from, $field, $to);
+        return sprintf('%s %s TO %s', $field, ...$value);
     }
 
     protected function bool(string $field, bool $bool): string

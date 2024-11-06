@@ -126,6 +126,14 @@ class FilterBuilder
     }
 
     /**
+     * Add a "where TO clause to the segments array.
+     */
+    public function whereTo(string|Closure $column, mixed ...$value): self
+    {
+        return $this->where($column, 'TO', $value);
+    }
+
+    /**
      * Prepare the value and operator for a where clause.
      */
     public function prepareValueAndOperator(mixed $value, mixed $operator, bool $useDefault = false): array
