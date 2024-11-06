@@ -67,11 +67,35 @@ class Expression implements FilterSegment
 
     protected function in(string $field, array $array): string
     {
-        $values = collect($array)->map(function ($value) {
-            return $this->escape($value);
-        })->implode(',');
+        $values = collect($array)
+            ->map(fn ($value) => $this->escape($value))
+            ->implode(',');
 
         return sprintf('%s IN [%s]', $field, $values);
+    }
+
+    protected function nin(string $field, array $array): string
+    {
+        $values = collect($array)
+            ->map(fn ($value) => $this->escape($value))
+            ->implode(',');
+
+        return sprintf('%s NOT IN [%s]', $field, $values);
+    }
+
+    protected function exists(string $field): string
+    {
+        return sprintf('%s EXISTS', $field);
+    }
+
+    protected function null(string $field): string
+    {
+        return sprintf('%s IS NULL', $field);
+    }
+
+    protected function empty(string $field): string
+    {
+        return sprintf('%s IS EMPTY', $field);
     }
 
     protected function between(string $field, $from, $to): string
@@ -108,15 +132,18 @@ class Expression implements FilterSegment
             '=' => 'eq',
             '!=' => 'neq',
             'in' => 'in',
+            'not in' => 'nin',
             '>=' => 'gte',
             '<=' => 'lte',
             '>' => 'gt',
             '<' => 'lt',
             'to' => 'to',
-            'exists' => 'exists',
             'not' => 'not',
             'and' => 'and',
             'or' => 'or',
+            'exists' => 'exists',
+            'is empty' => 'empty',
+            'is null' => 'null',
             default => 'eq'
         };
     }

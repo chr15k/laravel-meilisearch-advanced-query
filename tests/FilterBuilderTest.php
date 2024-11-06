@@ -58,6 +58,13 @@ final class FilterBuilderTest extends TestCase
         $this->assertSame("(name IN ['Chris','Bob']) OR email = 'chris@example.com'", $compiled);
     }
 
+    public function testBasicWhereNotInQuery()
+    {
+        $compiled = FilterBuilder::whereNotIn('name', ['Chris', 'Bob'])->compile();
+
+        $this->assertSame("name NOT IN ['Chris','Bob']", $compiled);
+    }
+
     public function testBasicWhereNotQuery()
     {
         $compiled = FilterBuilder::whereNot('name', 'Chris')->compile();
@@ -75,5 +82,20 @@ final class FilterBuilderTest extends TestCase
             ->compile();
 
         $this->assertSame("(NOT name = 'Chris' AND email = 'chris@example.com') OR email = 'bob@example.com'", $compiled);
+    }
+
+    public function testBasicWhereExistsQuery()
+    {
+        $this->assertSame('name EXISTS', FilterBuilder::whereExists('name')->compile());
+    }
+
+    public function testBasicWhereIsNullQuery()
+    {
+        $this->assertSame('name IS NULL', FilterBuilder::whereIsNull('name')->compile());
+    }
+
+    public function testBasicWhereIsEmptyQuery()
+    {
+        $this->assertSame('name IS EMPTY', FilterBuilder::whereIsEmpty('name')->compile());
     }
 }
