@@ -1,6 +1,6 @@
 {
-    "name": "chr15k/laravel-meilisearch-filter",
-    "description": "Laravel Meilisearch filter generator to work with Laravel Scout package",
+    "name": "chr15k/laravel-meilisearch-advanced-query",
+    "description": "Laravel Meilisearch advanced query generator",
     "license": "MIT",
     "version": "1.0.0",
     "keywords": [
@@ -9,8 +9,8 @@
         "search",
         "scout",
         "php",
-        "seo",
-        "meilisearch"
+        "meilisearch",
+        "filters"
     ],
     "authors": [
         {

@@ -1,11 +1,11 @@
-# Laravel Meilisearch Filter Generator
+# Laravel Meilisearch Advanced Query
 
-Generate filters to be used to perform advanced customization of search behaviour.
+Generate options using a convenient query builder to be used to perform advanced customization of search behaviour.
 
-Reference: https://laravel.com/docs/11.x/scout#customizing-engine-searches
+Context: https://laravel.com/docs/11.x/scout#customizing-engine-searches
 
 ## Install
 
 ```bash
-composer require chr15k/laravel-meilisearch-filter
+composer require chr15k/laravel-meilisearch-advanced-query
 ```
