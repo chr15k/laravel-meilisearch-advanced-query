@@ -1,9 +1,9 @@
 <?php
 
-namespace Chr15k\MeilisearchFilter;
+namespace Chr15k\MeilisearchAdvancedQuery;
 
 use Carbon\Carbon;
-use Chr15k\MeilisearchFilter\Contracts\FilterSegment;
+use Chr15k\MeilisearchAdvancedQuery\Contracts\FilterSegment;
 
 class Expression implements FilterSegment
 {

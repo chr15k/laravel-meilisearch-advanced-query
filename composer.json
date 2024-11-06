@@ -2,7 +2,6 @@
     "name": "chr15k/laravel-meilisearch-advanced-query",
     "description": "Laravel Meilisearch advanced query generator",
     "license": "MIT",
-    "version": "1.0.0",
     "keywords": [
         "laravel",
         "chr15k",
@@ -10,7 +9,7 @@
         "scout",
         "php",
         "meilisearch",
-        "filters"
+        "advanced query"
     ],
     "authors": [
         {
@@ -29,12 +28,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Chr15k\\MeilisearchFilter\\": "src"
+            "Chr15k\\MeilisearchAdvancedQuery\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Chr15k\\MeilisearchFilter\\Tests\\": "tests"
+            "Chr15k\\MeilisearchAdvancedQuery\\Tests\\": "tests"
         }
     },
     "config": {
@@ -43,10 +42,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Chr15k\\MeilisearchFilter\\Providers\\MeilisearchFilterServiceProvider"
+                "Chr15k\\MeilisearchAdvancedQuery\\Providers\\MeilisearchAdvancedQueryServiceProvider"
             ],
             "aliases": {
-                "FilterBuilder": "Chr15k\\MeilisearchFilter\\Facades\\FilterBuilder"
+                "FilterBuilder": "Chr15k\\MeilisearchAdvancedQuery\\Facades\\FilterBuilder"
             }
         }
     },

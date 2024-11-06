@@ -1,8 +1,8 @@
 <?php
 
-namespace Chr15k\MeilisearchFilter;
+namespace Chr15k\MeilisearchAdvancedQuery;
 
-use Chr15k\MeilisearchFilter\Contracts\FilterSegment;
+use Chr15k\MeilisearchAdvancedQuery\Contracts\FilterSegment;
 
 final class Filter
 {

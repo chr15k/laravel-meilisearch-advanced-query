@@ -1,8 +1,8 @@
 <?php
 
-namespace Chr15k\MeilisearchFilter\Facades;
+namespace Chr15k\MeilisearchAdvancedQuery\Facades;
 
-use Chr15k\MeilisearchFilter\FilterBuilder as Builder;
+use Chr15k\MeilisearchAdvancedQuery\FilterBuilder as Builder;
 use Illuminate\Support\Facades\Facade;
 
 class FilterBuilder extends Facade

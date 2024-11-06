@@ -1,8 +1,8 @@
 <?php
 
-namespace Chr15k\MeilisearchFilter\Tests;
+namespace Chr15k\MeilisearchAdvancedQuery\Tests;
 
-use Chr15k\MeilisearchFilter\Facades\FilterBuilder;
+use Chr15k\MeilisearchAdvancedQuery\Facades\FilterBuilder;
 
 final class FilterBuilderTest extends TestCase
 {

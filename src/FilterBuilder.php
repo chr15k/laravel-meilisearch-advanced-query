@@ -1,6 +1,6 @@
 <?php
 
-namespace Chr15k\MeilisearchFilter;
+namespace Chr15k\MeilisearchAdvancedQuery;
 
 use Closure;
 use InvalidArgumentException;

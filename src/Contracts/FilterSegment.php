@@ -1,6 +1,6 @@
 <?php
 
-namespace Chr15k\MeilisearchFilter\Contracts;
+namespace Chr15k\MeilisearchAdvancedQuery\Contracts;
 
 interface FilterSegment
 {

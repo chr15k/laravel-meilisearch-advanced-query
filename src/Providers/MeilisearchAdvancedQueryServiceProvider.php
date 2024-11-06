@@ -1,10 +1,10 @@
 <?php
 
-namespace Chr15k\MeilisearchFilter\Providers;
+namespace Chr15k\MeilisearchAdvancedQuery\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
-class MeilisearchFilterServiceProvider extends ServiceProvider
+class MeilisearchAdvancedQueryServiceProvider extends ServiceProvider
 {
     /**
      * {@inheritdoc}
