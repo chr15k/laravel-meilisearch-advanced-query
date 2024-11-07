@@ -4,6 +4,7 @@ namespace Chr15k\MeilisearchAdvancedQuery;
 
 use Closure;
 use InvalidArgumentException;
+use Meilisearch\Endpoints\Indexes;
 
 class FilterBuilder
 {
@@ -12,9 +13,13 @@ class FilterBuilder
      */
     public array $segments = [];
 
+    const DEFAULT_LIMIT = 20;
+
+    public int $limit = self::DEFAULT_LIMIT;
+    public ?string $sort;
+    public ?string $query;
+
     /**
-     * All of the available clause operators.
-     *
      * @var string[]
      */
     public array $operators = [
@@ -22,16 +27,47 @@ class FilterBuilder
         '<', 'to', 'not', 'and', 'or',
     ];
 
+    /**
+     * @var string[]
+     */
     public array $columnOnlyOperators = [
         'exists', 'is empty', 'is null',
     ];
 
+    public function callback()
+    {
+        return function (Indexes $meilisearch) {
+            return $meilisearch->search($this->query, [
+                'filter' => $this->compile(),
+                'sort' => $this->sort,
+                'limit' => $this->limit
+            ]);
+        };
+    }
+
     /**
      * Compile and return the complete filter statement.
      */
-    public function compile(): string
+    public function compile(): string|self
     {
+        // If called from within a closure, return the instance.
+        if (str_contains(debug_backtrace(
+            DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function'], '{closure}'
+        )) {
+            return $this;
+        }
+
         return (new Filter)($this->segments);
+    }
+
+    public function limit(int $limit = self::DEFAULT_LIMIT)
+    {
+        $this->limit = $limit;
+    }
+
+    public function sort(?string $sort = null)
+    {
+        $this->sort = $sort;
     }
 
     /**

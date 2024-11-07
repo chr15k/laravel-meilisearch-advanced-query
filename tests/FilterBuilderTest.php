@@ -103,4 +103,38 @@ final class FilterBuilderTest extends TestCase
     {
         $this->assertSame('count 1 TO 10', FilterBuilder::whereTo('count', 1, 10)->compile());
     }
+
+    public function testNestedQueryWithoutCompileResolvesToConcreteClass()
+    {
+        $builder = FilterBuilder::where(fn ($query) => $query
+            ->where('name', 'Chris')
+            ->orWhere('name', 'Bob')
+        );
+
+        $this->assertInstanceOf(\Chr15k\MeilisearchAdvancedQuery\FilterBuilder::class, $builder);
+    }
+
+    public function testCallingCompileFromWithinNestedQueryReturnsFilterBuilderInstance()
+    {
+        $builder = FilterBuilder::where(fn ($query) => $query
+            ->where('name', 'Chris')
+            ->orWhere('name', 'Bob')
+            ->compile()
+        );
+
+        $this->assertInstanceOf(\Chr15k\MeilisearchAdvancedQuery\FilterBuilder::class, $builder);
+    }
+
+    public function testCallingCompileFromWithinNestedQueryDoesNotAffectTheFinalOutput()
+    {
+        $compiled = FilterBuilder::where(fn ($query) => $query
+            ->where('name', 'Chris')
+            ->orWhere('name', 'Bob')
+            ->compile()
+        )
+        ->where('verified', true)
+        ->compile();
+
+        $this->assertSame("(name = 'Chris' OR name = 'Bob') AND verified = 'true'", $compiled);
+    }
 }
