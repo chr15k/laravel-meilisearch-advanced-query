@@ -8,11 +8,17 @@ class Nested implements FilterSegment
 {
     public function __construct(
         /** @var Expression[] */
-        public array $expressions = []
+        public array $expressions = [],
+        public string $boolean = 'AND',
+        public bool $init = false
     ) {}
 
     public function compile(): string
     {
-        return sprintf('(%s)', collect($this->expressions)->map->compile()->implode(' '));
+        return trim(sprintf(
+            '%s (%s)',
+            $this->init ? '' : $this->boolean,
+            collect($this->expressions)->map->compile()->implode(' ')
+        ));
     }
 }

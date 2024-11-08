@@ -30,16 +30,6 @@ class Expression implements FilterSegment
         return sprintf("%s {$operator} %s", $field, $this->escape($value));
     }
 
-    protected function and(string $field, mixed $value): string
-    {
-        return $this->build('AND', $field, $value);
-    }
-
-    protected function or(string $field, mixed $value): string
-    {
-        return $this->build('OR', $field, $value);
-    }
-
     protected function gte(string $field, mixed $value): string
     {
         return $this->build('>=', $field, $value);

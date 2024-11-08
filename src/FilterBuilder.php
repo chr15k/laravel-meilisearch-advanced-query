@@ -13,9 +13,6 @@ class FilterBuilder
      */
     public array $segments = [];
 
-    const DEFAULT_LIMIT = 20;
-
-    public int $limit = self::DEFAULT_LIMIT;
     public ?array $sort = [];
     public string $query = '';
 
@@ -34,15 +31,22 @@ class FilterBuilder
         'exists', 'is empty', 'is null',
     ];
 
+    /**
+     * Return closure for Scout search method.
+     *
+     * @see https://laravel.com/docs/11.x/scout#customizing-engine-searches
+     */
     public function callback(): Closure
     {
-        $data = [
-            'filter' => $this->compile(),
-            'sort' => $this->sort,
-            'limit' => $this->limit
-        ];
+        $filter = $this->compile();
 
-        return fn (Indexes $meilisearch) => $meilisearch->search($this->query, $data);
+        return function (Indexes $meilisearch, $query, $options) use ($filter) {
+
+            $options['filter'] = $filter;
+            $options['sort'] = $this->sort;
+
+            return $meilisearch->search($query, $options);
+        };
     }
 
     /**
@@ -58,13 +62,6 @@ class FilterBuilder
         }
 
         return (new Filter)($this->segments);
-    }
-
-    public function limit(int $limit = self::DEFAULT_LIMIT): self
-    {
-        $this->limit = $limit;
-
-        return $this;
     }
 
     public function sort(?string $sort = null, string $direction = 'asc'): self
@@ -87,7 +84,10 @@ class FilterBuilder
     ): self {
 
         if ($column instanceof Closure) {
-            $this->segments[] = new Nested($column(new self)->segments);
+
+            $this->segments[] = new Nested(
+                $column(new self)->segments, $boolean, empty($this->segments)
+            );
 
             return $this;
         }
@@ -128,11 +128,27 @@ class FilterBuilder
     }
 
     /**
+     * Add a "OR where IN" clause to the segments array.
+     */
+    public function orWhereIn(string|Closure $column, mixed $value = null): self
+    {
+        return $this->where($column, 'IN', $value, 'OR');
+    }
+
+    /**
      * Add a "where NOT IN" clause to the segments array.
      */
     public function whereNotIn(string|Closure $column, mixed $value = null): self
     {
         return $this->where($column, 'NOT IN', $value);
+    }
+
+    /**
+     * Add a "OR where NOT IN" clause to the segments array.
+     */
+    public function orWhereNotIn(string|Closure $column, mixed $value = null): self
+    {
+        return $this->where($column, 'NOT IN', $value, 'OR');
     }
 
     /**
@@ -144,11 +160,27 @@ class FilterBuilder
     }
 
     /**
+     * Add a "OR where NOT" clause to the segments array.
+     */
+    public function orWhereNot(string|Closure $column, mixed $value = null): self
+    {
+        return $this->where($column, 'NOT', $value, 'OR');
+    }
+
+    /**
      * Add a "where EXISTS" clause to the segments array.
      */
     public function whereExists(string|Closure $column): self
     {
         return $this->where($column, 'EXISTS');
+    }
+
+    /**
+     * Add a "OR where EXISTS" clause to the segments array.
+     */
+    public function orWhereExists(string|Closure $column): self
+    {
+        return $this->where($column, 'EXISTS', null, 'OR');
     }
 
     /**
@@ -160,6 +192,14 @@ class FilterBuilder
     }
 
     /**
+     * Add a "OR where IS NULL" clause to the segments array.
+     */
+    public function orWhereIsNull(string|Closure $column): self
+    {
+        return $this->where($column, 'IS NULL', null, 'OR');
+    }
+
+    /**
      * Add a "where IS EMPTY" clause to the segments array.
      */
     public function whereIsEmpty(string|Closure $column): self
@@ -168,11 +208,27 @@ class FilterBuilder
     }
 
     /**
+     * Add a "OR where IS EMPTY" clause to the segments array.
+     */
+    public function orWhereIsEmpty(string|Closure $column): self
+    {
+        return $this->where($column, 'IS EMPTY', null, 'OR');
+    }
+
+    /**
      * Add a "where TO clause to the segments array.
      */
-    public function whereTo(string|Closure $column, mixed ...$value): self
+    public function whereTo(string|Closure $column, mixed $from, mixed $to): self
     {
-        return $this->where($column, 'TO', $value);
+        return $this->where($column, 'TO', [$from, $to]);
+    }
+
+    /**
+     * Add a "OR where TO clause to the segments array.
+     */
+    public function orWhereTo(string|Closure $column, mixed $from, mixed $to): self
+    {
+        return $this->where($column, 'TO', [$from, $to], 'OR');
     }
 
     /**
@@ -192,9 +248,9 @@ class FilterBuilder
     /**
      * Determine if the given operator and arg count combination should use the default operator and value.
      */
-    public function shouldUseDefaultValueAndOperator(int $argCount, string $operator): bool
+    public function shouldUseDefaultValueAndOperator(int $argCount, ?string $operator): bool
     {
-        return $argCount === 2 && ! in_array(strtolower($operator), $this->columnOnlyOperators);
+        return $argCount === 2 && ! in_array(strtolower($operator ?? ''), $this->columnOnlyOperators);
     }
 
     /**
@@ -202,8 +258,8 @@ class FilterBuilder
      *
      * Prevents using Null values with invalid operators.
      */
-    protected function invalidOperatorAndValue(string $operator, mixed $value): bool
+    protected function invalidOperatorAndValue(?string $operator, mixed $value): bool
     {
-        return is_null($value) && in_array(strtolower($operator), $this->operators);
+        return is_null($value) && in_array(strtolower($operator ?? ''), $this->operators);
     }
 }

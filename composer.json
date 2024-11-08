@@ -46,9 +46,6 @@
     },
     "extra": {
         "laravel": {
-            "providers": [
-                "Chr15k\\MeilisearchAdvancedQuery\\Providers\\MeilisearchAdvancedQueryServiceProvider"
-            ],
             "aliases": {
                 "FilterBuilder": "Chr15k\\MeilisearchAdvancedQuery\\Facades\\FilterBuilder"
             }
