@@ -39,15 +39,14 @@ User::search($term, function (Indexes $meilisearch, string $query, array $option
 use App\Models\User;
 use Chr15k\MeilisearchAdvancedQuery\Facades\FilterBuilder;
 
-// use callbacks to nest queries (same as Eloquent)
-$callback = FilterBuilder::where(fn ($query) => $query
+$builder = FilterBuilder::where(fn ($query) => $query
     ->where('name', 'Chris')
     ->orWhere('name', 'Bob')
-)->where('verified', true)
- ->sort('name', 'desc')
- ->callback();
+)
+    ->where('verified', true)
+    ->sort('name', 'desc');
 
-User::search($term, $callback);
+User::search($term, $builder->callback());
 ```
 
 ### Raw query
