@@ -76,12 +76,7 @@ class FilterBuilder
     /**
      * Add a where clause to the segments array.
      */
-    public function where(
-        string|Closure $column,
-        mixed $operator = '=',
-        mixed $value = null,
-        string $boolean = 'AND'
-    ): self {
+    public function where(string|Closure $column, mixed $operator = '=', mixed $value = null, string $boolean = 'AND'): self {
 
         if ($column instanceof Closure) {
 
@@ -106,11 +101,7 @@ class FilterBuilder
     /**
      * Add an "or where" clause to the segments array.
      */
-    public function orWhere(
-        string|Closure $column,
-        ?string $operator = null,
-        mixed $value = null,
-    ): self {
+    public function orWhere(string|Closure $column, ?string $operator = null, mixed $value = null): self {
 
         [$value, $operator] = $this->prepareValueAndOperator(
             $value, $operator, $this->shouldUseDefaultValueAndOperator(func_num_args(), $operator)

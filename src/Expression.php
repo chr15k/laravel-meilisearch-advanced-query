@@ -129,8 +129,6 @@ class Expression implements FilterSegment
             '<' => 'lt',
             'to' => 'to',
             'not' => 'not',
-            'and' => 'and',
-            'or' => 'or',
             'exists' => 'exists',
             'is empty' => 'empty',
             'is null' => 'null',
