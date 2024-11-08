@@ -1,5 +1,7 @@
 # Laravel Meilisearch Advanced Query
 
+[![Latest Stable Version](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/v)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![Total Downloads](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/downloads)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![Latest Unstable Version](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/v/unstable)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![License](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/license)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![PHP Version Require](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/require/php)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query)
+
 Generate options using a convenient query builder to be used to perform advanced customization of search behaviour.
 
 Context: [Customizing Search Engine](https://laravel.com/docs/11.x/scout#customizing-engine-searches)
