@@ -16,8 +16,8 @@ class FilterBuilder
     const DEFAULT_LIMIT = 20;
 
     public int $limit = self::DEFAULT_LIMIT;
-    public ?string $sort;
-    public ?string $query;
+    public ?array $sort = [];
+    public string $query = '';
 
     /**
      * @var string[]
@@ -34,15 +34,15 @@ class FilterBuilder
         'exists', 'is empty', 'is null',
     ];
 
-    public function callback()
+    public function callback(): Closure
     {
-        return function (Indexes $meilisearch) {
-            return $meilisearch->search($this->query, [
-                'filter' => $this->compile(),
-                'sort' => $this->sort,
-                'limit' => $this->limit
-            ]);
-        };
+        $data = [
+            'filter' => $this->compile(),
+            'sort' => $this->sort,
+            'limit' => $this->limit
+        ];
+
+        return fn (Indexes $meilisearch) => $meilisearch->search($this->query, $data);
     }
 
     /**
@@ -60,14 +60,20 @@ class FilterBuilder
         return (new Filter)($this->segments);
     }
 
-    public function limit(int $limit = self::DEFAULT_LIMIT)
+    public function limit(int $limit = self::DEFAULT_LIMIT): self
     {
         $this->limit = $limit;
+
+        return $this;
     }
 
-    public function sort(?string $sort = null)
+    public function sort(?string $sort = null, string $direction = 'asc'): self
     {
-        $this->sort = $sort;
+        $direction = strtolower($direction);
+
+        $this->sort = ["{$sort}:{$direction}"];
+
+        return $this;
     }
 
     /**

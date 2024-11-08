@@ -6,6 +6,11 @@ use Chr15k\MeilisearchAdvancedQuery\Facades\FilterBuilder;
 
 final class FilterBuilderTest extends TestCase
 {
+    public function testCallback()
+    {
+        $this->assertSame("Closure", get_class(FilterBuilder::where('verified', true)->callback()));
+    }
+
     public function testBasicQuery()
     {
         $compiled = FilterBuilder::where('verified', true)->compile();
