@@ -107,7 +107,7 @@ FilterBuilder::where(fn ($query) => $query
 
 ### Supported search engine operators
 
-Context: [Meilisearch operators](https://www.meilisearch.com/docs/learn/filtering_and_sorting/filter_expression_reference#filter-operators)
+Docs: [Meilisearch operators](https://www.meilisearch.com/docs/learn/filtering_and_sorting/filter_expression_reference#filter-operators)
 
 ```
 '=', '!=', 'IN', 'NOT IN', '>=', '<=', '>', '<', 'TO', 'NOT', 'EXISTS', 'IS EMPTY', 'IS NULL'
