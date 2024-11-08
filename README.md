@@ -2,9 +2,7 @@
 
 [![Latest Stable Version](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/v)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![Total Downloads](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/downloads)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![Latest Unstable Version](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/v/unstable)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![License](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/license)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![PHP Version Require](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/require/php)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query)
 
-Generate options using a convenient query builder to be used to perform advanced customization of search behaviour.
-
-Context: [Customizing Search Engine](https://laravel.com/docs/11.x/scout#customizing-engine-searches)
+I wrote this package to help with generating custom Meilisearch queries using a query builder (instead of passing raw Meilisearch queries into Scout's search callback), see the following doc for context: [Customizing Search Engine](https://laravel.com/docs/11.x/scout#customizing-engine-searches) then check out Usage section below :)
 
 This packages assumes you have installed and setup [Laravel Scout](https://laravel.com/docs/11.x/scout) with [Meilisearch driver](https://laravel.com/docs/11.x/scout#meilisearch)
 
