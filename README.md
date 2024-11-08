@@ -16,7 +16,7 @@ composer require chr15k/laravel-meilisearch-advanced-query
 
 ## Usage
 
-#### Before
+#### Before
 
 ```php
 <?php
