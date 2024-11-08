@@ -2,7 +2,7 @@
 
 Generate options using a convenient query builder to be used to perform advanced customization of search behaviour.
 
-Context: https://laravel.com/docs/11.x/scout#customizing-engine-searches
+Context: [Customizing Search Engine](https://laravel.com/docs/11.x/scout#customizing-engine-searches)
 
 This packages assumes you have installed and setup [Laravel Scout](https://laravel.com/docs/11.x/scout) with [Meilisearch driver](https://laravel.com/docs/11.x/scout#meilisearch)
 
@@ -55,7 +55,7 @@ $results = $builder->paginate();
 
 ### Raw query
 
-If you just need the generated query from the builder then you can call `->compile()` instead of `->callback()`
+If you just need the generated query from the builder then call `->compile()` instead of `->callback()`
 
 ## Builder Methods
 
@@ -106,6 +106,8 @@ FilterBuilder::where(fn ($query) => $query
 ```
 
 ### Supported search engine operators
+
+Context: [Meilisearch operators](https://www.meilisearch.com/docs/learn/filtering_and_sorting/filter_expression_reference#filter-operators)
 
 ```
 '=', '!=', 'IN', 'NOT IN', '>=', '<=', '>', '<', 'TO', 'NOT', 'EXISTS', 'IS EMPTY', 'IS NULL'
