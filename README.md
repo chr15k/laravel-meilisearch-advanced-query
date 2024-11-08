@@ -29,7 +29,7 @@ User::search($term, function (Indexes $meilisearch, string $query, array $option
     $options['sort'] = "[name:desc]";
 
     return $meilisearch->search($query, $options);
-});
+})->paginate();
 ```
 
 #### After
@@ -39,14 +39,18 @@ User::search($term, function (Indexes $meilisearch, string $query, array $option
 use App\Models\User;
 use Chr15k\MeilisearchAdvancedQuery\Facades\FilterBuilder;
 
-$builder = FilterBuilder::where(fn ($query) => $query
+$callback = FilterBuilder::where(fn ($query) => $query
     ->where('name', 'Chris')
     ->orWhere('name', 'Bob')
 )
     ->where('verified', true)
-    ->sort('name', 'desc');
+    ->sort('name', 'desc')
+    ->callback();
 
-User::search($term, $builder->callback());
+$builder = User::search($term, $callback);
+
+// continue to chain Scout methods
+$results = $builder->paginate();
 ```
 
 ### Raw query
