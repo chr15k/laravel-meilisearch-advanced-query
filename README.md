@@ -2,11 +2,11 @@
 
 [![Latest Stable Version](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/v)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![Total Downloads](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/downloads)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![Latest Unstable Version](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/v/unstable)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![License](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/license)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![PHP Version Require](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/require/php)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query)
 
-I wrote this package to help with generating more refined Meilisearch queries using an intuitive query builder (replacing the need to construct your own raw Meilisearh queries when working with Scout's advanced filter option), check out the Usage section below :)
+I wrote this package to help with generating more refined Meilisearch queries using an intuitive query builder (replacing the need to construct your own raw Meilisearch queries when working with Scout's advanced filter option), check out the [Usage](https://github.com/chr15k/laravel-meilisearch-advanced-query?tab=readme-ov-file#usage) section below :)
 
 ---
 
-**NOTE** This packages assumes you have installed and setup the following:
+**NOTE** - This packages assumes you have installed and setup the following:
 
 -   [Laravel Scout](https://laravel.com/docs/11.x/scout)
 -   [Meilisearch driver](https://laravel.com/docs/11.x/scout#meilisearch)
