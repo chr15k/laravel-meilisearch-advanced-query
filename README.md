@@ -2,9 +2,16 @@
 
 [![Latest Stable Version](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/v)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![Total Downloads](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/downloads)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![Latest Unstable Version](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/v/unstable)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![License](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/license)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![PHP Version Require](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/require/php)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query)
 
-I wrote this package to help with generating more refined Meilisearch queries using an intuitive query builder (replacing the need to construct your own raw Meilisearh queries when working with Scout's advanced filter option), see the following doc for context: [Customizing Search Engine](https://laravel.com/docs/11.x/scout#customizing-engine-searches), then check out the Usage section below :)
+I wrote this package to help with generating more refined Meilisearch queries using an intuitive query builder (replacing the need to construct your own raw Meilisearh queries when working with Scout's advanced filter option), check out the Usage section below :)
 
-This packages assumes you have installed and setup [Laravel Scout](https://laravel.com/docs/11.x/scout) with [Meilisearch driver](https://laravel.com/docs/11.x/scout#meilisearch)
+---
+
+**NOTE** This packages assumes you have installed and setup the following:
+
+-   [Laravel Scout](https://laravel.com/docs/11.x/scout)
+-   [Meilisearch driver](https://laravel.com/docs/11.x/scout#meilisearch)
+
+---
 
 ###
 
@@ -16,26 +23,9 @@ composer require chr15k/laravel-meilisearch-advanced-query
 
 ## Usage
 
-#### Before
+[Go here](https://laravel.com/docs/11.x/scout#customizing-engine-searches) to see how custom search engine queries are used with Laravel Scout.
 
-```php
-<?php
-use App\Models\User;
-use Meilisearch\Endpoints\Indexes;
-
-// raw meilisearch query string
-$filter = "(name = 'Chris' OR name = 'Bob') AND verified = 'true'";
-
-User::search($term, function (Indexes $meilisearch, string $query, array $options) use ($filter) {
-
-    $options['filter'] = $filter;
-    $options['sort'] = "[name:desc]";
-
-    return $meilisearch->search($query, $options);
-})->paginate();
-```
-
-#### After
+Here's an example of how to use this library with Scout's search method on a model:
 
 ```php
 <?php
@@ -153,6 +143,8 @@ FilterBuilder::where('email', 'chris@example.com')
 #### # whereIsNull(column)
 
 #### # orWhereIsNull(column)
+
+---
 
 ### Nested / grouped queries
 
