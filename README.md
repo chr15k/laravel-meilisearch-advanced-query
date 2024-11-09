@@ -62,13 +62,13 @@ If you just need the generated query from the builder then call `->compile()` in
 
 ## Builder Methods
 
-#### where(column, operator(optional), value(optional), boolean(optional))
+#### # where(column, operator(optional), value(optional), boolean(optional))
 
 ```php
 FilterBuilder::where('name', 'Chris')->compile(); // "name = 'Chris'"
 ```
 
-#### orWhere(column, operator(optional), value(optional))
+#### # orWhere(column, operator(optional), value(optional))
 
 ```php
 FilterBuilder::orWhere('name', 'Chris')->compile(); // "name = 'Chris'"
@@ -78,13 +78,13 @@ FilterBuilder::where('name', 'Bob')
     ->compile(); // "name = 'Bob' OR name = 'Chris'"
 ```
 
-#### whereIn(column, value(optional))
+#### # whereIn(column, value(optional))
 
 ```php
 FilterBuilder::whereIn('name', ['Chris', 'Bob'])->compile(); // "name IN ['Chris','Bob']"
 ```
 
-#### orWhereIn(column, value(optional))
+#### # orWhereIn(column, value(optional))
 
 ```php
 FilterBuilder::orWhereIn('name', ['Chris', 'Bob'])->compile(); // "name IN ['Chris','Bob']"
@@ -93,39 +93,39 @@ FilterBuilder::where('email', 'chris@example.com')
     ->orWhereIn('name', ['Chris', 'Bob'])->compile(); // "email = 'chris@example.com' OR name IN ['Chris','Bob']"
 ```
 
-#### whereNotIn(column, value(optional))
+#### # whereNotIn(column, value(optional))
 
 ```php
 FilterBuilder::whereNotIn('name', ['Chris', 'Bob'])->compile(); // "name NOT IN ['Chris','Bob']"
 ```
 
-#### orWhereNotIn(column, value(optional))
+#### # orWhereNotIn(column, value(optional))
 
 ```php
 FilterBuilder::where('email', 'chris@example.com')
     ->orWhereNotIn('name', ['Chris', 'Bob'])->compile(); // "email = 'chris@example.com' OR name NOT IN ['Chris','Bob']"
 ```
 
-#### whereNot(column, value(optional))
+#### # whereNot(column, value(optional))
 
 ```php
 FilterBuilder::whereNot('name', 'Chris')->compile(); // => "NOT name 'Chris'"
 ```
 
-#### orWhereNot(column, value(optional))
+#### # orWhereNot(column, value(optional))
 
 ```php
 FilterBuilder::where('email', 'chris@example.com')
     ->orWhereNot('name', 'Chris')->compile(); // => "email = 'chris@example.com' OR NOT name 'Chris'"
 ```
 
-#### whereIsEmpty(column)
+#### # whereIsEmpty(column)
 
 ```php
 FilterBuilder::whereIsEmpty('name')->compile(); // => "name IS EMPTY"
 ```
 
-#### orWhereIsEmpty(column)
+#### # orWhereIsEmpty(column)
 
 ```php
 FilterBuilder::whereNot('name', 'Chris')
@@ -133,26 +133,26 @@ FilterBuilder::whereNot('name', 'Chris')
     ->compile(); // => "NOT name 'Chris' OR name IS EMPTY"
 ```
 
-#### whereTo(column, from, to)
+#### # whereTo(column, from, to)
 
 ```php
 FilterBuilder::whereTo('count', 1, 10)->compile(); // => "count 1 TO 10"
 ```
 
-#### orWhereTo(column, from, to)
+#### # orWhereTo(column, from, to)
 
 ```php
 FilterBuilder::where('email', 'chris@example.com')
     ->orWhereTo('count', 1, 10)->compile(); // => "email = 'chris@example.com' OR count 1 TO 10"
 ```
 
-#### whereExists(column)
+#### # whereExists(column)
 
-#### orWhereExists(column)
+#### # orWhereExists(column)
 
-#### whereIsNull(column)
+#### # whereIsNull(column)
 
-#### orWhereIsNull(column)
+#### # orWhereIsNull(column)
 
 ### Nested / grouped queries
 
@@ -163,6 +163,14 @@ FilterBuilder::where(fn ($query) => $query
 )
 ->orWhere('email', 'chris@example.com')
 ->compile(); // => "(NOT name 'Chris' OR name IS EMPTY) OR email = 'chris@example.com'"
+```
+
+### Sorting
+
+In addition to the above methods, you can also call sort on the builder instance as follows:
+
+```php
+FilterBuilder::where('name', 'Chris')->sort('name', 'desc')->compile();
 ```
 
 ### Supported search engine operators
