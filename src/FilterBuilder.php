@@ -5,36 +5,19 @@ namespace Chr15k\MeilisearchAdvancedQuery;
 use Closure;
 use InvalidArgumentException;
 use Meilisearch\Endpoints\Indexes;
+use Chr15k\MeilisearchAdvancedQuery\Contracts\Builder;
+use Chr15k\MeilisearchAdvancedQuery\Contracts\FilterSegment;
 
-class FilterBuilder
+class FilterBuilder implements Builder
 {
-    /**
-     * @var Expression|Nested[]
-     */
+    /** @var FilterSegment[] */
     public array $segments = [];
 
+    /** @var null|string[] */
     public ?array $sort = [];
-    public string $query = '';
 
     /**
-     * @var string[]
-     */
-    public array $operators = [
-        '=', '!=', 'in', '>=', '<=', '>',
-        '<', 'to', 'not', 'and', 'or',
-    ];
-
-    /**
-     * @var string[]
-     */
-    public array $columnOnlyOperators = [
-        'exists', 'is empty', 'is null',
-    ];
-
-    /**
-     * Return closure for Scout search method.
-     *
-     * @see https://laravel.com/docs/11.x/scout#customizing-engine-searches
+     * {@inheritDoc}
      */
     public function callback(): Closure
     {
@@ -50,33 +33,28 @@ class FilterBuilder
     }
 
     /**
-     * Compile and return the complete filter statement.
+     * {@inheritDoc}
      */
     public function compile(): string|self
     {
-        // If called from within a closure, return the instance.
         if (str_contains(debug_backtrace(
-            DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function'], '{closure}'
-        )) {
+            DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function'] ?? '', '{closure}')
+        ) {
             return $this;
         }
 
         return (new Filter)($this->segments);
     }
 
-    public function sort(?string $sort = null, string $direction = 'asc'): self
-    {
-        $direction = strtolower($direction);
-
-        $this->sort = ["{$sort}:{$direction}"];
-
-        return $this;
-    }
-
     /**
      * Add a where clause to the segments array.
      */
-    public function where(string|Closure $column, mixed $operator = '=', mixed $value = null, string $boolean = 'AND'): self {
+    public function where(
+        string|Closure $column,
+        mixed $operator = '=',
+        mixed $value = null,
+        string $boolean = 'AND'
+    ): self {
 
         if ($column instanceof Closure) {
 
@@ -207,7 +185,7 @@ class FilterBuilder
     }
 
     /**
-     * Add a "where TO clause to the segments array.
+     * Add a "where TO" clause to the segments array.
      */
     public function whereTo(string|Closure $column, mixed $from, mixed $to): self
     {
@@ -215,11 +193,23 @@ class FilterBuilder
     }
 
     /**
-     * Add a "OR where TO clause to the segments array.
+     * Add a "OR where TO" clause to the segments array.
      */
     public function orWhereTo(string|Closure $column, mixed $from, mixed $to): self
     {
         return $this->where($column, 'TO', [$from, $to], 'OR');
+    }
+
+    /**
+     * Add a sort clause to the segments array.
+     */
+    public function sort(?string $sort = null, string $direction = 'asc'): self
+    {
+        $direction = strtolower($direction);
+
+        $this->sort = ["{$sort}:{$direction}"];
+
+        return $this;
     }
 
     /**
@@ -241,7 +231,7 @@ class FilterBuilder
      */
     public function shouldUseDefaultValueAndOperator(int $argCount, ?string $operator): bool
     {
-        return $argCount === 2 && ! in_array(strtolower($operator ?? ''), $this->columnOnlyOperators);
+        return $argCount === 2 && ! in_array(strtolower($operator ?? ''), self::OPERATORS_COLUMN_ONLY);
     }
 
     /**
@@ -251,6 +241,6 @@ class FilterBuilder
      */
     protected function invalidOperatorAndValue(?string $operator, mixed $value): bool
     {
-        return is_null($value) && in_array(strtolower($operator ?? ''), $this->operators);
+        return is_null($value) && in_array(strtolower($operator ?? ''), self::OPERATORS);
     }
 }

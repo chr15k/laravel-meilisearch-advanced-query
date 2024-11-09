@@ -2,7 +2,7 @@
 
 [![Latest Stable Version](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/v)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![Total Downloads](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/downloads)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![Latest Unstable Version](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/v/unstable)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![License](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/license)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![PHP Version Require](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/require/php)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query)
 
-I wrote this package to help with generating custom Meilisearch queries using a query builder (instead of passing raw Meilisearch queries into Scout's search callback), see the following doc for context: [Customizing Search Engine](https://laravel.com/docs/11.x/scout#customizing-engine-searches) then check out Usage section below :)
+I wrote this package to help with generating more refined Meilisearch queries using an intuitive query builder (replacing the need to construct your own raw Meilisearh queries when working with Scout's advanced filter option), see the following doc for context: [Customizing Search Engine](https://laravel.com/docs/11.x/scout#customizing-engine-searches), then check out the Usage section below :)
 
 This packages assumes you have installed and setup [Laravel Scout](https://laravel.com/docs/11.x/scout) with [Meilisearch driver](https://laravel.com/docs/11.x/scout#meilisearch)
 
@@ -23,9 +23,12 @@ composer require chr15k/laravel-meilisearch-advanced-query
 use App\Models\User;
 use Meilisearch\Endpoints\Indexes;
 
-User::search($term, function (Indexes $meilisearch, string $query, array $options) {
+// raw meilisearch query string
+$filter = "(name = 'Chris' OR name = 'Bob') AND verified = 'true'";
 
-    $options['filter'] = "(name = 'Chris' OR name = 'Bob') AND verified = 'true'";
+User::search($term, function (Indexes $meilisearch, string $query, array $options) use ($filter) {
+
+    $options['filter'] = $filter;
     $options['sort'] = "[name:desc]";
 
     return $meilisearch->search($query, $options);
@@ -59,44 +62,101 @@ If you just need the generated query from the builder then call `->compile()` in
 
 ## Builder Methods
 
+#### where(column, operator(optional), value(optional), boolean(optional))
+
 ```php
-public function where(string|Closure $column, mixed $operator = '=', mixed $value = null, string $boolean = 'AND');
-public function orWhere(string|Closure $column, ?string $operator = null, mixed $value = null);
-
-public function whereIn(string|Closure $column, mixed $value = null);
-public function orWhereIn(string|Closure $column, mixed $value = null);
-
-public function whereNotIn(string|Closure $column, mixed $value = null);
-public function orWhereNotIn(string|Closure $column, mixed $value = null);
-
-public function whereNot(string|Closure $column, mixed $value = null);
-public function orWhereNot(string|Closure $column, mixed $value = null);
-
-public function whereExists(string|Closure $column);
-public function orWhereExists(string|Closure $column);
-
-public function whereIsNull(string|Closure $column);
-public function orWhereIsNull(string|Closure $column);
-
-public function whereIsEmpty(string|Closure $column);
-public function orWhereIsEmpty(string|Closure $column);
-
-public function whereTo(string|Closure $column, mixed $from, mixed $to);
-public function orWhereTo(string|Closure $column, mixed $from, mixed $to);
+FilterBuilder::where('name', 'Chris')->compile(); // "name = 'Chris'"
 ```
 
-Examples:
+#### orWhere(column, operator(optional), value(optional))
+
+```php
+FilterBuilder::orWhere('name', 'Chris')->compile(); // "name = 'Chris'"
+
+FilterBuilder::where('name', 'Bob')
+    ->orWhere('name', 'Chris')
+    ->compile(); // "name = 'Bob' OR name = 'Chris'"
+```
+
+#### whereIn(column, value(optional))
+
+```php
+FilterBuilder::whereIn('name', ['Chris', 'Bob'])->compile(); // "name IN ['Chris','Bob']"
+```
+
+#### orWhereIn(column, value(optional))
+
+```php
+FilterBuilder::orWhereIn('name', ['Chris', 'Bob'])->compile(); // "name IN ['Chris','Bob']"
+
+FilterBuilder::where('email', 'chris@example.com')
+    ->orWhereIn('name', ['Chris', 'Bob'])->compile(); // "email = 'chris@example.com' OR name IN ['Chris','Bob']"
+```
+
+#### whereNotIn(column, value(optional))
+
+```php
+FilterBuilder::whereNotIn('name', ['Chris', 'Bob'])->compile(); // "name NOT IN ['Chris','Bob']"
+```
+
+#### orWhereNotIn(column, value(optional))
+
+```php
+FilterBuilder::where('email', 'chris@example.com')
+    ->orWhereNotIn('name', ['Chris', 'Bob'])->compile(); // "email = 'chris@example.com' OR name NOT IN ['Chris','Bob']"
+```
+
+#### whereNot(column, value(optional))
 
 ```php
 FilterBuilder::whereNot('name', 'Chris')->compile(); // => "NOT name 'Chris'"
-FilterBuilder::whereTo('count', 1, 10)->compile(); // => "count 1 TO 10"
-FilterBuilder::whereIsEmpty('name')->compile(); // => "name IS EMPTY"
+```
 
+#### orWhereNot(column, value(optional))
+
+```php
+FilterBuilder::where('email', 'chris@example.com')
+    ->orWhereNot('name', 'Chris')->compile(); // => "email = 'chris@example.com' OR NOT name 'Chris'"
+```
+
+#### whereIsEmpty(column)
+
+```php
+FilterBuilder::whereIsEmpty('name')->compile(); // => "name IS EMPTY"
+```
+
+#### orWhereIsEmpty(column)
+
+```php
 FilterBuilder::whereNot('name', 'Chris')
     ->orWhereIsEmpty('name')
     ->compile(); // => "NOT name 'Chris' OR name IS EMPTY"
+```
 
-// nested
+#### whereTo(column, from, to)
+
+```php
+FilterBuilder::whereTo('count', 1, 10)->compile(); // => "count 1 TO 10"
+```
+
+#### orWhereTo(column, from, to)
+
+```php
+FilterBuilder::where('email', 'chris@example.com')
+    ->orWhereTo('count', 1, 10)->compile(); // => "email = 'chris@example.com' OR count 1 TO 10"
+```
+
+#### whereExists(column)
+
+#### orWhereExists(column)
+
+#### whereIsNull(column)
+
+#### orWhereIsNull(column)
+
+### Nested / grouped queries
+
+```php
 FilterBuilder::where(fn ($query) => $query
     ->whereNot('name', 'Chris')
     ->orWhereIsEmpty('name')
@@ -113,7 +173,7 @@ Docs: [Meilisearch operators](https://www.meilisearch.com/docs/learn/filtering_a
 '=', '!=', 'IN', 'NOT IN', '>=', '<=', '>', '<', 'TO', 'NOT', 'EXISTS', 'IS EMPTY', 'IS NULL'
 ```
 
-Any of these operators can be called on `where()` or `orWhere()` methods as follows:
+Alternatively to the methods above, any of these operators can be called on `where()` or `orWhere()` methods, example:
 
 ```php
 FilterBuilder::where('name', 'NOT', 'Chris')->compile(); // => "NOT name 'Chris'"
