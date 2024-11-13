@@ -1,3 +1,8 @@
+## 1.0.4 - 2024-11-13
+
+-   Readme updated
+-   Small refactor
+
 ## 1.0.3 - 2024-11-09
 
 -   Readme updated
