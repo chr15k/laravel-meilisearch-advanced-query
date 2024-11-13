@@ -4,7 +4,7 @@ namespace Chr15k\MeilisearchAdvancedQuery;
 
 use Chr15k\MeilisearchAdvancedQuery\Contracts\FilterSegment;
 
-class Nested implements FilterSegment
+class NestedExpression implements FilterSegment
 {
     public function __construct(
         /** @var Expression[] */

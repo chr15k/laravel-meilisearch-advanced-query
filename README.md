@@ -25,28 +25,28 @@ composer require chr15k/laravel-meilisearch-advanced-query
 
 [Go here](https://laravel.com/docs/11.x/scout#customizing-engine-searches) to see how custom search engine queries are used with Laravel Scout.
 
-Here's an example of how to use this library with Scout's search method on a model:
-
 ```php
 <?php
 use App\Models\User;
 use Chr15k\MeilisearchAdvancedQuery\Facades\FilterBuilder;
 
-$callback = FilterBuilder::where(fn ($query) => $query
-    ->where('name', 'Chris')
-    ->orWhere('name', 'Bob')
-)
-    ->where('verified', true)
-    ->sort('name', 'desc')
+// build custom Meilisearch query callback
+$callback = FilterBuilder::where('name', 'Chris')
+    ->whereIn('email', ['chris@example.com', 'bob@example.com'])
+    ->orWhere(fn ($query) => $query
+        ->whereTo('login_count', 50, 400)
+        ->orWhereIsEmpty('verified_at')
+    )->sort('name', 'desc')
     ->callback();
 
+// include callback in Scout's search method
 $builder = User::search($term, $callback);
 
 // continue to chain Scout methods
 $results = $builder->paginate();
 ```
 
-### Raw query
+### Raw Meilisearch query
 
 If you just need the generated query from the builder then call `->compile()` instead of `->callback()`
 

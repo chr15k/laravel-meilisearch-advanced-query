@@ -16,6 +16,8 @@ class FilterBuilder implements Builder
     /** @var null|string[] */
     public ?array $sort = [];
 
+    public function __construct(public bool $compilable = true) {}
+
     /**
      * {@inheritDoc}
      */
@@ -37,13 +39,7 @@ class FilterBuilder implements Builder
      */
     public function compile(): string|self
     {
-        if (str_contains(debug_backtrace(
-            DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function'] ?? '', '{closure}')
-        ) {
-            return $this;
-        }
-
-        return (new Filter)($this->segments);
+        return $this->compilable ? (new Filter)($this->segments) : $this;
     }
 
     /**
@@ -58,8 +54,8 @@ class FilterBuilder implements Builder
 
         if ($column instanceof Closure) {
 
-            $this->segments[] = new Nested(
-                $column(new self)->segments, $boolean, empty($this->segments)
+            $this->segments[] = new NestedExpression(
+                $column(new self(false))->segments, $boolean, empty($this->segments)
             );
 
             return $this;

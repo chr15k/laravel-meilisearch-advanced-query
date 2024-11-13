@@ -2,13 +2,10 @@
 
 namespace Chr15k\MeilisearchAdvancedQuery;
 
-use Carbon\Carbon;
 use Chr15k\MeilisearchAdvancedQuery\Contracts\FilterSegment;
 
 class Expression implements FilterSegment
 {
-    const DATE_FORMAT = 'Y-m-d';
-
     public function __construct(
         public string $column,
         public mixed $value = null,
@@ -107,13 +104,6 @@ class Expression implements FilterSegment
         return $data === null ? 'NULL' : (
             is_int($data) || is_float($data) ? $data : "'{$data}'"
         );
-    }
-
-    protected function getDateFormatted($date)
-    {
-        if ($date) {
-            return Carbon::createFromFormat(self::DATE_FORMAT, $date, 'GMT');
-        }
     }
 
     public function operatorFunc(?string $operator = null): string
