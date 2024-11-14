@@ -1,3 +1,7 @@
+## 2.0.2 - 2024-11-14
+
+-   Remove facade from composer.json
+
 ## 2.0.1 - 2024-11-14
 
 -   Remove unused code
