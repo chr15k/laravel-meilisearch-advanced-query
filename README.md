@@ -28,7 +28,7 @@ composer require chr15k/laravel-meilisearch-advanced-query
 ```php
 <?php
 use App\Models\User;
-use Chr15k\MeilisearchAdvancedQuery\Facades\FilterBuilder;
+use Chr15k\MeilisearchAdvancedQuery\MeilisearchQuery;
 
 $builder = MeilisearchQuery::for(User::class)
     ->where('name', 'Chris')
