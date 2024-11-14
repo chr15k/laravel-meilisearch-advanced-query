@@ -1,3 +1,7 @@
+## 2.0.3 - 2024-11-14
+
+-   Readme updated
+
 ## 2.0.2 - 2024-11-14
 
 -   Remove facade from composer.json
