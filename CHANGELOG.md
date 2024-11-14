@@ -1,3 +1,9 @@
+## 2.0.0 - 2024-11-14
+
+-   Refactored package - now requires a searchable model class on builder creation
+-   No longer need to call Scout search() separately
+-   Readme updated
+
 ## 1.0.4 - 2024-11-13
 
 -   Readme updated

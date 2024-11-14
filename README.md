@@ -43,6 +43,9 @@ $builder = MeilisearchQuery::for(User::class)
 $results = $builder->paginate();
 ```
 
+> [!NOTE]
+> The above example replaces the standard `User::search($term, $callback)` method
+
 ## Builder Methods
 
 #### # where(column, operator(optional), value(optional), boolean(optional))
