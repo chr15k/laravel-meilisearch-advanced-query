@@ -44,13 +44,6 @@
             "php-http/discovery": true
         }
     },
-    "extra": {
-        "laravel": {
-            "aliases": {
-                "FilterBuilder": "Chr15k\\MeilisearchAdvancedQuery\\Facades\\FilterBuilder"
-            }
-        }
-    },
     "scripts": {
         "test": "phpunit tests"
     },
