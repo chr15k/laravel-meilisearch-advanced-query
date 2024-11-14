@@ -1,3 +1,7 @@
+## 2.0.1 - 2024-11-14
+
+-   Remove unused code
+
 ## 2.0.0 - 2024-11-14
 
 -   Refactored package - now requires a searchable model class on builder creation

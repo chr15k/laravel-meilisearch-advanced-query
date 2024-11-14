@@ -2,13 +2,13 @@
 
 namespace Chr15k\MeilisearchAdvancedQuery;
 
-use Chr15k\MeilisearchAdvancedQuery\Contracts\QueryBuilder;
-use Chr15k\MeilisearchAdvancedQuery\Contracts\QuerySegment;
 use Closure;
-use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
 use Laravel\Scout\Searchable;
 use Meilisearch\Endpoints\Indexes;
+use Illuminate\Database\Eloquent\Model;
+use Chr15k\MeilisearchAdvancedQuery\Contracts\QueryBuilder;
+use Chr15k\MeilisearchAdvancedQuery\Contracts\QuerySegment;
 
 class MeilisearchQuery implements QueryBuilder
 {
@@ -129,7 +129,6 @@ class MeilisearchQuery implements QueryBuilder
      */
     public function orWhere(string|Closure $column, ?string $operator = null, mixed $value = null): self
     {
-
         [$value, $operator] = $this->prepareValueAndOperator(
             $value, $operator, $this->shouldUseDefaultValueAndOperator(func_num_args(), $operator)
         );
