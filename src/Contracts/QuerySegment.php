@@ -2,7 +2,7 @@
 
 namespace Chr15k\MeilisearchAdvancedQuery\Contracts;
 
-interface FilterSegment
+interface QuerySegment
 {
     public function compile(): string;
 }

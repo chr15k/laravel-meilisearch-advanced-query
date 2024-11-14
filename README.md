@@ -30,110 +30,139 @@ composer require chr15k/laravel-meilisearch-advanced-query
 use App\Models\User;
 use Chr15k\MeilisearchAdvancedQuery\Facades\FilterBuilder;
 
-// build custom Meilisearch query callback
-$callback = FilterBuilder::where('name', 'Chris')
+$builder = MeilisearchQuery::for(User::class)
+    ->where('name', 'Chris')
     ->whereIn('email', ['chris@example.com', 'bob@example.com'])
     ->orWhere(fn ($query) => $query
         ->whereTo('login_count', 50, 400)
         ->orWhereIsEmpty('verified_at')
-    )->sort('name', 'desc')
-    ->callback();
-
-// include callback in Scout's search method
-$builder = User::search($term, $callback);
+    )->sort(['name:desc', 'email:asc'])
+     ->search($term); // returns Scout Builder instance
 
 // continue to chain Scout methods
 $results = $builder->paginate();
 ```
-
-### Raw Meilisearch query
-
-If you just need the generated query from the builder then call `->compile()` instead of `->callback()`
 
 ## Builder Methods
 
 #### # where(column, operator(optional), value(optional), boolean(optional))
 
 ```php
-FilterBuilder::where('name', 'Chris')->compile(); // "name = 'Chris'"
+MeilisearchQuery::for(User::class)->where('name', 'Chris');
+
+// "name = 'Chris'"
 ```
 
 #### # orWhere(column, operator(optional), value(optional))
 
 ```php
-FilterBuilder::orWhere('name', 'Chris')->compile(); // "name = 'Chris'"
+MeilisearchQuery::for(User::class)->orWhere('name', 'Chris')
 
-FilterBuilder::where('name', 'Bob')
+// "name = 'Chris'"
+
+MeilisearchQuery::for(User::class)
+    ->where('name', 'Bob')
     ->orWhere('name', 'Chris')
-    ->compile(); // "name = 'Bob' OR name = 'Chris'"
+
+// "name = 'Bob' OR name = 'Chris'"
 ```
 
 #### # whereIn(column, value(optional))
 
 ```php
-FilterBuilder::whereIn('name', ['Chris', 'Bob'])->compile(); // "name IN ['Chris','Bob']"
+MeilisearchQuery::for(User::class)
+    ->whereIn('name', ['Chris', 'Bob']);
+
+// "name IN ['Chris','Bob']"
 ```
 
 #### # orWhereIn(column, value(optional))
 
 ```php
-FilterBuilder::orWhereIn('name', ['Chris', 'Bob'])->compile(); // "name IN ['Chris','Bob']"
+MeilisearchQuery::for(User::class)
+    ->orWhereIn('name', ['Chris', 'Bob']);
 
-FilterBuilder::where('email', 'chris@example.com')
-    ->orWhereIn('name', ['Chris', 'Bob'])->compile(); // "email = 'chris@example.com' OR name IN ['Chris','Bob']"
+// "name IN ['Chris','Bob']"
+
+MeilisearchQuery::for(User::class)
+    ->where('email', 'chris@example.com')
+    ->orWhereIn('name', ['Chris', 'Bob']) ;
+
+// "email = 'chris@example.com' OR name IN ['Chris','Bob']"
 ```
 
 #### # whereNotIn(column, value(optional))
 
 ```php
-FilterBuilder::whereNotIn('name', ['Chris', 'Bob'])->compile(); // "name NOT IN ['Chris','Bob']"
+MeilisearchQuery::for(User::class)
+    ->whereNotIn('name', ['Chris', 'Bob']);
+
+// "name NOT IN ['Chris','Bob']"
 ```
 
 #### # orWhereNotIn(column, value(optional))
 
 ```php
-FilterBuilder::where('email', 'chris@example.com')
-    ->orWhereNotIn('name', ['Chris', 'Bob'])->compile(); // "email = 'chris@example.com' OR name NOT IN ['Chris','Bob']"
+MeilisearchQuery::for(User::class)
+    ->where('email', 'chris@example.com')
+    ->orWhereNotIn('name', ['Chris', 'Bob']);
+
+// "email = 'chris@example.com' OR name NOT IN ['Chris','Bob']"
 ```
 
 #### # whereNot(column, value(optional))
 
 ```php
-FilterBuilder::whereNot('name', 'Chris')->compile(); // => "NOT name 'Chris'"
+MeilisearchQuery::for(User::class)
+    ->whereNot('name', 'Chris');
+
+// "NOT name 'Chris'"
 ```
 
 #### # orWhereNot(column, value(optional))
 
 ```php
-FilterBuilder::where('email', 'chris@example.com')
-    ->orWhereNot('name', 'Chris')->compile(); // => "email = 'chris@example.com' OR NOT name 'Chris'"
+MeilisearchQuery::for(User::class)
+    ->where('email', 'chris@example.com')
+    ->orWhereNot('name', 'Chris');
+
+// "email = 'chris@example.com' OR NOT name 'Chris'"
 ```
 
 #### # whereIsEmpty(column)
 
 ```php
-FilterBuilder::whereIsEmpty('name')->compile(); // => "name IS EMPTY"
+MeilisearchQuery::for(User::class)->whereIsEmpty('name');
+
+// "name IS EMPTY"
 ```
 
 #### # orWhereIsEmpty(column)
 
 ```php
-FilterBuilder::whereNot('name', 'Chris')
-    ->orWhereIsEmpty('name')
-    ->compile(); // => "NOT name 'Chris' OR name IS EMPTY"
+MeilisearchQuery::for(User::class)
+    ->whereNot('name', 'Chris')
+    ->orWhereIsEmpty('name');
+
+// "NOT name 'Chris' OR name IS EMPTY"
 ```
 
 #### # whereTo(column, from, to)
 
 ```php
-FilterBuilder::whereTo('count', 1, 10)->compile(); // => "count 1 TO 10"
+MeilisearchQuery::for(User::class)->whereTo('count', 1, 10);
+
+// "count 1 TO 10"
 ```
 
 #### # orWhereTo(column, from, to)
 
 ```php
-FilterBuilder::where('email', 'chris@example.com')
-    ->orWhereTo('count', 1, 10)->compile(); // => "email = 'chris@example.com' OR count 1 TO 10"
+MeilisearchQuery::for(User::class)
+    ->where('email', 'chris@example.com')
+    ->orWhereTo('count', 1, 10);
+
+// "email = 'chris@example.com' OR count 1 TO 10"
 ```
 
 #### # whereExists(column)
@@ -149,21 +178,39 @@ FilterBuilder::where('email', 'chris@example.com')
 ### Nested / grouped queries
 
 ```php
-FilterBuilder::where(fn ($query) => $query
-    ->whereNot('name', 'Chris')
-    ->orWhereIsEmpty('name')
-)
-->orWhere('email', 'chris@example.com')
-->compile(); // => "(NOT name 'Chris' OR name IS EMPTY) OR email = 'chris@example.com'"
+MeilisearchQuery::for(User::class)
+    ->where(fn ($query) => $query
+        ->whereNot('name', 'Chris')
+        ->orWhereIsEmpty('name')
+    )
+    ->orWhere('email', 'chris@example.com');
+
+// "(NOT name 'Chris' OR name IS EMPTY) OR email = 'chris@example.com'"
 ```
 
 ### Sorting
 
 In addition to the above methods, you can also call sort on the builder instance as follows:
 
+#### Single column sort:
+
 ```php
-FilterBuilder::where('name', 'Chris')->sort('name', 'desc')->compile();
+MeilisearchQuery::for(User::class)
+    ->where('name', 'Chris')
+    ->orWhere('name', 'Bob')
+    ->sort('name:desc');
 ```
+
+#### Multiple column sort:
+
+```php
+MeilisearchQuery::for(User::class)
+    ->where('name', 'Chris')
+    ->orWhere('name', 'Bob')
+    ->sort(['name:desc', 'email:asc']);
+```
+
+For more information on sorting see this [link](https://www.meilisearch.com/docs/learn/filtering_and_sorting/sort_search_results)
 
 ### Supported search engine operators
 
@@ -176,15 +223,43 @@ Docs: [Meilisearch operators](https://www.meilisearch.com/docs/learn/filtering_a
 Alternatively to the methods above, any of these operators can be called on `where()` or `orWhere()` methods, example:
 
 ```php
-FilterBuilder::where('name', 'NOT', 'Chris')->compile(); // => "NOT name 'Chris'"
-FilterBuilder::where('count', 'TO', [1, 10])->compile(); // => "count 1 TO 10"
-FilterBuilder::where('name', 'IS EMPTY')->compile(); // => "name IS EMPTY"
+MeilisearchQuery::for(User::class)->where('name', 'NOT', 'Chris'); // "NOT name 'Chris'"
+MeilisearchQuery::for(User::class)->where('count', 'TO', [1, 10]); // "count 1 TO 10"
+MeilisearchQuery::for(User::class)->where('name', 'IS EMPTY'); // "name IS EMPTY"
 ```
 
 Calling without operator will default to equals (same behaviour as Eloquent):
 
 ```php
-FilterBuilder::where('name', 'Chris')->compile(); // => "name = 'Chris'"
+MeilisearchQuery::for(User::class)->where('name', 'Chris'); // "name = 'Chris'"
+```
+
+## Debugging / helpers
+
+To get the raw query string from the builder, call `compile()` instead of `search()`
+
+```php
+MeilisearchQuery::for(User::class)
+    ->where(fn ($query) => $query
+        ->whereIn('name', ['Chris', 'Bob'])
+        ->orWhereIsEmpty('verified_at')
+    )
+    ->orWhere('email', 'chris@example.com')
+    ->compile();
+
+// "(name IN ['Chris','Bob'] OR verified_at IS EMPTY) OR email = 'chris@example.com'"
+```
+
+To inspect the current builder instance properties:
+
+```php
+MeilisearchQuery::for(User::class)->where('name', 'Chris')->inspect();
+```
+
+Or use the `dump` helper:
+
+```php
+MeilisearchQuery::for(User::class)->where('name', 'Chris')->dump();
 ```
 
 ## Tests

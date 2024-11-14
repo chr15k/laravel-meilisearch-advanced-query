@@ -2,14 +2,14 @@
 
 namespace Chr15k\MeilisearchAdvancedQuery;
 
-use Chr15k\MeilisearchAdvancedQuery\Contracts\FilterSegment;
+use Chr15k\MeilisearchAdvancedQuery\Contracts\QuerySegment;
 
-final class Filter
+final class QueryCompiler
 {
     public function __invoke(array $segments): string
     {
         return collect($segments)
-            ->whereInstanceOf(FilterSegment::class)
+            ->whereInstanceOf(QuerySegment::class)
             ->map->compile()
             ->unique()
             ->filter()

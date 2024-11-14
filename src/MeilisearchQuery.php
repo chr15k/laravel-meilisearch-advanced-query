@@ -2,48 +2,55 @@
 
 namespace Chr15k\MeilisearchAdvancedQuery;
 
+use Chr15k\MeilisearchAdvancedQuery\Contracts\QueryBuilder;
+use Chr15k\MeilisearchAdvancedQuery\Contracts\QuerySegment;
 use Closure;
+use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
+use Laravel\Scout\Searchable;
 use Meilisearch\Endpoints\Indexes;
-use Chr15k\MeilisearchAdvancedQuery\Contracts\Builder;
-use Chr15k\MeilisearchAdvancedQuery\Contracts\FilterSegment;
 
-class FilterBuilder implements Builder
+class MeilisearchQuery implements QueryBuilder
 {
-    /** @var FilterSegment[] */
-    public array $segments = [];
+    /** @var QuerySegment[] */
+    protected array $segments = [];
 
     /** @var null|string[] */
-    public ?array $sort = [];
+    protected ?array $sort = [];
 
-    public function __construct(public bool $compilable = true) {}
+    /** @var null|Model */
+    protected $model;
 
-    /**
-     * {@inheritDoc}
-     */
-    public function callback(): Closure
-    {
-        $filter = $this->compile();
-
-        return function (Indexes $meilisearch, $query, $options) use ($filter) {
-
-            $options['filter'] = $filter;
-            $options['sort'] = $this->sort;
-
-            return $meilisearch->search($query, $options);
-        };
-    }
+    private function __construct(public bool $compilable = true) {}
 
     /**
      * {@inheritDoc}
      */
-    public function compile(): string|self
+    public static function for(string $modelClass): self
     {
-        return $this->compilable ? (new Filter)($this->segments) : $this;
+        if (! class_exists($modelClass)) {
+            throw new InvalidArgumentException("The class $modelClass does not exist.");
+        }
+
+        $modelInstance = new $modelClass;
+        if (! $modelInstance instanceof Model) {
+            throw new InvalidArgumentException(
+                "The class $modelClass must be an instance of Illuminate\Database\Eloquent\Model."
+            );
+        }
+
+        if (! in_array(Searchable::class, class_uses_recursive($modelInstance))) {
+            throw new InvalidArgumentException("The class $modelClass must be a searchable model.");
+        }
+
+        $instance = new self;
+        $instance->model = $modelInstance;
+
+        return $instance;
     }
 
     /**
-     * Add a where clause to the segments array.
+     * {@inheritDoc}
      */
     public function where(
         string|Closure $column,
@@ -51,6 +58,8 @@ class FilterBuilder implements Builder
         mixed $value = null,
         string $boolean = 'AND'
     ): self {
+
+        $this->ensureModelIsSet();
 
         if ($column instanceof Closure) {
 
@@ -73,9 +82,53 @@ class FilterBuilder implements Builder
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function compile(): string|self
+    {
+        return $this->compilable ? (new QueryCompiler)($this->segments) : $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function search(string $term = ''): \Laravel\Scout\Builder
+    {
+        return $this->model::search($term, $this->callback());
+    }
+
+    /**
+     * Ensure that the for() method has been called before proceeding.
+     *
+     * @throws InvalidArgumentException
+     */
+    protected function ensureModelIsSet()
+    {
+        if (! $this->model && $this->compilable) {
+            throw new InvalidArgumentException('You must call MeilisearchQuery::for() with a valid model before using this method.');
+        }
+    }
+
+    /**
+     * Return a callback for Scout based on the compiled query.
+     */
+    protected function callback(): Closure
+    {
+        $filter = $this->compile();
+
+        return function (Indexes $meilisearch, $query, $options) use ($filter) {
+            $options['filter'] = $filter;
+            $options['sort'] = $this->sort;
+
+            return $meilisearch->search($query, $options);
+        };
+    }
+
+    /**
      * Add an "or where" clause to the segments array.
      */
-    public function orWhere(string|Closure $column, ?string $operator = null, mixed $value = null): self {
+    public function orWhere(string|Closure $column, ?string $operator = null, mixed $value = null): self
+    {
 
         [$value, $operator] = $this->prepareValueAndOperator(
             $value, $operator, $this->shouldUseDefaultValueAndOperator(func_num_args(), $operator)
@@ -197,21 +250,41 @@ class FilterBuilder implements Builder
     }
 
     /**
-     * Add a sort clause to the segments array.
+     * Add a sort clause to the builder instance.
      */
-    public function sort(?string $sort = null, string $direction = 'asc'): self
+    public function sort(array|string $sort): self
     {
-        $direction = strtolower($direction);
+        $this->ensureModelIsSet();
 
-        $this->sort = ["{$sort}:{$direction}"];
+        $this->sort = (array) $sort;
 
         return $this;
     }
 
     /**
+     * Inspect the builder properties.
+     */
+    public function inspect(): array
+    {
+        return [
+            'segments' => $this->segments,
+            'sort' => $this->sort,
+            'model' => $this->model
+        ];
+    }
+
+    /**
+     * Dump the builder properties.
+     */
+    public function dump()
+    {
+        dump($this->inspect());
+    }
+
+    /**
      * Prepare the value and operator for a where clause.
      */
-    public function prepareValueAndOperator(mixed $value, mixed $operator, bool $useDefault = false): array
+    protected function prepareValueAndOperator(mixed $value, mixed $operator, bool $useDefault = false): array
     {
         if ($useDefault) {
             return [$operator, '='];
@@ -225,7 +298,7 @@ class FilterBuilder implements Builder
     /**
      * Determine if the given operator and arg count combination should use the default operator and value.
      */
-    public function shouldUseDefaultValueAndOperator(int $argCount, ?string $operator): bool
+    protected function shouldUseDefaultValueAndOperator(int $argCount, ?string $operator): bool
     {
         return $argCount === 2 && ! in_array(strtolower($operator ?? ''), self::OPERATORS_COLUMN_ONLY);
     }

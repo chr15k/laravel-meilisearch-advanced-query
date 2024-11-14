@@ -2,34 +2,50 @@
 
 namespace Chr15k\MeilisearchAdvancedQuery\Tests;
 
-use Chr15k\MeilisearchAdvancedQuery\Facades\FilterBuilder;
+use InvalidArgumentException;
+use Chr15k\MeilisearchAdvancedQuery\MeilisearchQuery;
+use Chr15k\MeilisearchAdvancedQuery\Tests\Models\NonSearchableUser;
+use Chr15k\MeilisearchAdvancedQuery\Tests\Models\User;
 
-final class FilterBuilderTest extends TestCase
+final class MeilisearchQueryTest extends TestCase
 {
-    public function testCallback()
+    public function testForEloquentModel()
     {
-        $this->assertSame("Closure", get_class(
-            FilterBuilder::where('verified', true)->callback()
-        ));
+        $this->assertSame(
+            MeilisearchQuery::class,
+            get_class(MeilisearchQuery::for(User::class))
+        );
+    }
+
+    public function testForNonEloquentModel()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        MeilisearchQuery::for(\stdClass::class);
+    }
+
+    public function testForNonSearchableEloquentModel()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        MeilisearchQuery::for(NonSearchableUser::class);
     }
 
     public function testBasicQuery()
     {
-        $compiled = FilterBuilder::where('verified', true)->compile();
+        $compiled = MeilisearchQuery::for(User::class)->where('verified', true)->compile();
 
         $this->assertSame("verified = 'true'", $compiled);
     }
 
     public function testBasicQueryWithExplicitOperator()
     {
-        $compiled = FilterBuilder::where('verified', '=', true)->compile();
+        $compiled = MeilisearchQuery::for(User::class)->where('verified', '=', true)->compile();
 
         $this->assertSame("verified = 'true'", $compiled);
     }
 
     public function testBasicNestedQuery()
     {
-        $compiled = FilterBuilder::where(fn ($query) => $query
+        $compiled = MeilisearchQuery::for(User::class)->where(fn ($query) => $query
             ->where('name', 'Chris')
             ->orWhere('name', 'Bob')
         )->where('verified', true)->compile();
@@ -39,7 +55,7 @@ final class FilterBuilderTest extends TestCase
 
     public function testBasicNestedQueryWithExplicitOperator()
     {
-        $compiled = FilterBuilder::where(fn ($query) => $query
+        $compiled = MeilisearchQuery::for(User::class)->where(fn ($query) => $query
             ->where('name', '=', 'Chris')
             ->orWhere('name', '=', 'Bob')
         )->where('verified', '=', true)->compile();
@@ -49,21 +65,21 @@ final class FilterBuilderTest extends TestCase
 
     public function testBasicWhereInQuery()
     {
-        $compiled = FilterBuilder::whereIn('name', ['Chris', 'Bob'])->compile();
+        $compiled = MeilisearchQuery::for(User::class)->whereIn('name', ['Chris', 'Bob'])->compile();
 
         $this->assertSame("name IN ['Chris','Bob']", $compiled);
     }
 
     public function testBasicOrWhereInQuery()
     {
-        $compiled = FilterBuilder::orWhereIn('name', ['Chris', 'Bob'])->compile();
+        $compiled = MeilisearchQuery::for(User::class)->orWhereIn('name', ['Chris', 'Bob'])->compile();
 
         $this->assertSame("name IN ['Chris','Bob']", $compiled);
     }
 
     public function testBasicWhereInNestedQuery()
     {
-        $compiled = FilterBuilder::where(fn ($query) => $query
+        $compiled = MeilisearchQuery::for(User::class)->where(fn ($query) => $query
             ->whereIn('name', ['Chris', 'Bob'])
         )
             ->orWhere('email', 'chris@example.com')
@@ -74,21 +90,21 @@ final class FilterBuilderTest extends TestCase
 
     public function testBasicWhereNotInQuery()
     {
-        $compiled = FilterBuilder::whereNotIn('name', ['Chris', 'Bob'])->compile();
+        $compiled = MeilisearchQuery::for(User::class)->whereNotIn('name', ['Chris', 'Bob'])->compile();
 
         $this->assertSame("name NOT IN ['Chris','Bob']", $compiled);
     }
 
     public function testBasicWhereNotQuery()
     {
-        $compiled = FilterBuilder::whereNot('name', 'Chris')->compile();
+        $compiled = MeilisearchQuery::for(User::class)->whereNot('name', 'Chris')->compile();
 
         return $this->assertSame("NOT name = 'Chris'", $compiled);
     }
 
     public function testBasicWhereNotNestedQuery()
     {
-        $compiled = FilterBuilder::where(fn ($query) => $query
+        $compiled = MeilisearchQuery::for(User::class)->where(fn ($query) => $query
             ->whereNot('name', 'Chris')
             ->where('email', 'chris@example.com')
         )
@@ -100,52 +116,52 @@ final class FilterBuilderTest extends TestCase
 
     public function testBasicWhereExistsQuery()
     {
-        $this->assertSame('name EXISTS', FilterBuilder::whereExists('name')->compile());
+        $this->assertSame('name EXISTS', MeilisearchQuery::for(User::class)->whereExists('name')->compile());
     }
 
     public function testBasicWhereIsNullQuery()
     {
-        $this->assertSame('name IS NULL', FilterBuilder::whereIsNull('name')->compile());
+        $this->assertSame('name IS NULL', MeilisearchQuery::for(User::class)->whereIsNull('name')->compile());
     }
 
     public function testBasicWhereIsEmptyQuery()
     {
-        $this->assertSame('name IS EMPTY', FilterBuilder::whereIsEmpty('name')->compile());
+        $this->assertSame('name IS EMPTY', MeilisearchQuery::for(User::class)->whereIsEmpty('name')->compile());
     }
 
     public function testBasicOrWhereExistsQuery()
     {
-        $this->assertSame('name EXISTS', FilterBuilder::orWhereExists('name')->compile());
+        $this->assertSame('name EXISTS', MeilisearchQuery::for(User::class)->orWhereExists('name')->compile());
     }
 
     public function testBasicOrWhereIsNullQuery()
     {
-        $this->assertSame('name IS NULL', FilterBuilder::orWhereIsNull('name')->compile());
+        $this->assertSame('name IS NULL', MeilisearchQuery::for(User::class)->orWhereIsNull('name')->compile());
     }
 
     public function testBasicOrWhereIsEmptyQuery()
     {
-        $this->assertSame('name IS EMPTY', FilterBuilder::orWhereIsEmpty('name')->compile());
+        $this->assertSame('name IS EMPTY', MeilisearchQuery::for(User::class)->orWhereIsEmpty('name')->compile());
     }
 
     public function testBasicOrWhereToQuery()
     {
-        $this->assertSame('count 1 TO 10', FilterBuilder::orWhereTo('count', 1, 10)->compile());
+        $this->assertSame('count 1 TO 10', MeilisearchQuery::for(User::class)->orWhereTo('count', 1, 10)->compile());
     }
 
     public function testBasicWhereGteQuery()
     {
-        $this->assertSame('count >= 10', FilterBuilder::where('count', ">=", 10)->compile());
+        $this->assertSame('count >= 10', MeilisearchQuery::for(User::class)->where('count', ">=", 10)->compile());
     }
 
     public function testBasicWhereLteQuery()
     {
-        $this->assertSame('count <= 10', FilterBuilder::where('count', "<=", 10)->compile());
+        $this->assertSame('count <= 10', MeilisearchQuery::for(User::class)->where('count', "<=", 10)->compile());
     }
 
     public function testMultipleNestedOperators()
     {
-        $compiled = FilterBuilder::where(fn ($query) => $query
+        $compiled = MeilisearchQuery::for(User::class)->where(fn ($query) => $query
             ->where('count', ">=", 10)
             ->where('count', '<=', 100)
             ->orWhere(fn ($subQuery) => $subQuery
@@ -162,7 +178,7 @@ final class FilterBuilderTest extends TestCase
 
     public function testNestedInception()
     {
-        $compiled = FilterBuilder::where('name', 'Chris')
+        $compiled = MeilisearchQuery::for(User::class)->where('name', 'Chris')
             ->where(fn ($query) => $query->where('name', 'Bob')->where('verified', true))
                 ->orWhere(fn ($query) => $query->where('name', 'Erin'))
                     ->orWhere(fn ($query) => $query->where('email', '!=', 'chris@example.com')
@@ -178,35 +194,33 @@ final class FilterBuilderTest extends TestCase
 
     public function testNestedQueryWithoutCompileResolvesToConcreteClass()
     {
-        $builder = FilterBuilder::where(fn ($query) => $query
+        $builder = MeilisearchQuery::for(User::class)->where(fn ($query) => $query
             ->where('name', 'Chris')
             ->orWhere('name', 'Bob')
         );
 
-        $this->assertInstanceOf(\Chr15k\MeilisearchAdvancedQuery\FilterBuilder::class, $builder);
+        $this->assertInstanceOf(\Chr15k\MeilisearchAdvancedQuery\MeilisearchQuery::class, $builder);
     }
 
-    public function testCallingCompileFromWithinNestedQueryReturnsFilterBuilderInstance()
+    public function testSingleSort()
     {
-        $builder = FilterBuilder::where(fn ($query) => $query
+        $instance = MeilisearchQuery::for(User::class)
             ->where('name', 'Chris')
             ->orWhere('name', 'Bob')
-            ->compile()
-        );
+            ->sort('name:desc')
+            ->inspect();
 
-        $this->assertInstanceOf(\Chr15k\MeilisearchAdvancedQuery\FilterBuilder::class, $builder);
+        $this->assertSame(['name:desc'], $instance['sort']);
     }
 
-    public function testCallingCompileFromWithinNestedQueryDoesNotAffectTheFinalOutput()
+    public function testMultipleSort()
     {
-        $compiled = FilterBuilder::where(fn ($query) => $query
+        $instance = MeilisearchQuery::for(User::class)
             ->where('name', 'Chris')
             ->orWhere('name', 'Bob')
-            ->compile()
-        )
-        ->where('verified', true)
-        ->compile();
+            ->sort(['name:desc', 'email:asc'])
+            ->inspect();
 
-        $this->assertSame("(name = 'Chris' OR name = 'Bob') AND verified = 'true'", $compiled);
+        $this->assertSame(['name:desc', 'email:asc'], $instance['sort']);
     }
 }

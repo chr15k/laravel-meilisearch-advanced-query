@@ -2,9 +2,9 @@
 
 namespace Chr15k\MeilisearchAdvancedQuery;
 
-use Chr15k\MeilisearchAdvancedQuery\Contracts\FilterSegment;
+use Chr15k\MeilisearchAdvancedQuery\Contracts\QuerySegment;
 
-class Expression implements FilterSegment
+class Expression implements QuerySegment
 {
     public function __construct(
         public string $column,
