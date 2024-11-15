@@ -163,6 +163,27 @@ MeilisearchQuery::for(User::class)
 // "email = 'chris@example.com' OR count 1 TO 10"
 ```
 
+#### # whereRaw(rawQuery)
+
+```php
+MeilisearchQuery::for(User::class)
+    ->whereRaw("name = 'Chris' OR name = 'Bob'")
+    ->compile();
+
+// "name = 'Chris' OR name = 'Bob'"
+```
+
+#### # orWhereRaw(rawQuery)
+
+```php
+MeilisearchQuery::for(User::class)
+    ->whereRaw("name = 'Chris'")
+    ->orWhereRaw("name = 'Bob'")
+    ->compile();
+
+// "name = 'Chris' OR name = 'Bob'"
+```
+
 #### # whereExists(column)
 
 #### # orWhereExists(column)
