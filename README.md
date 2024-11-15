@@ -2,7 +2,7 @@
 
 [![Latest Stable Version](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/v)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![Total Downloads](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/downloads)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![Latest Unstable Version](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/v/unstable)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![License](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/license)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![PHP Version Require](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/require/php)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query)
 
-This library provides an intuitive query builder that makes generating more complex Meilisearch queries (compound, nested, meilisearch specific operators, ranking etc.) easier, replacing the need to construct raw Meilisearch queries when working with Scout's advanced filter option. Check out the [Usage](https://github.com/chr15k/laravel-meilisearch-advanced-query?tab=readme-ov-file#usage) section below :)
+This library provides an intuitive query builder that makes generating more complex Meilisearch queries (compound, nested, meilisearch specific operators, ranking etc.) easier, replacing the need to construct your own raw Meilisearch queries when working with Scout's advanced filter option. Check out the [Usage](https://github.com/chr15k/laravel-meilisearch-advanced-query?tab=readme-ov-file#usage) section below :)
 
 > [!NOTE]
 > This package assumes you have installed and setup the following:
