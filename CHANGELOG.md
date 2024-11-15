@@ -1,3 +1,7 @@
+## 2.1.0 - 2024-11-15
+
+-   Add new raw query methods: whereRaw() & orWhereRaw()
+
 ## 2.0.3 - 2024-11-14
 
 -   Readme updated
