@@ -223,4 +223,54 @@ final class MeilisearchQueryTest extends TestCase
 
         $this->assertSame(['name:desc', 'email:asc'], $instance['sort']);
     }
+
+    public function testBasicRawQuery()
+    {
+        $compiled = MeilisearchQuery::for(User::class)->whereRaw("name = 'Chris'")->compile();
+
+        $this->assertSame("name = 'Chris'", $compiled);
+    }
+
+    public function testBasicMultipleRawOrQuery()
+    {
+        $compiled = MeilisearchQuery::for(User::class)
+            ->whereRaw("name = 'Chris'")
+            ->orWhereRaw("name = 'Bob'")
+            ->compile();
+
+        $this->assertSame("name = 'Chris' OR name = 'Bob'", $compiled);
+    }
+
+    public function testBasicRawAndQuery()
+    {
+        $compiled = MeilisearchQuery::for(User::class)
+            ->whereRaw("name = 'Chris'")
+            ->whereRaw("name = 'Bob'")
+            ->compile();
+
+        $this->assertSame("name = 'Chris' AND name = 'Bob'", $compiled);
+    }
+
+    public function testSingleBasicRawQuery()
+    {
+        $compiled = MeilisearchQuery::for(User::class)
+            ->whereRaw("name = 'Chris' OR name = 'Bob'")
+            ->compile();
+
+        $this->assertSame("name = 'Chris' OR name = 'Bob'", $compiled);
+    }
+
+    public function testMixedRawNestedQuery()
+    {
+        $compiled = MeilisearchQuery::for(User::class)
+            ->where('email', 'chris@example.com')
+            ->where(fn ($query) => $query
+                ->whereRaw("name = 'Chris'")
+                ->orWhereRaw("name = 'Bob'")
+            )
+            ->where('verified', true)
+            ->compile();
+
+        $this->assertSame("email = 'chris@example.com' AND (name = 'Chris' OR name = 'Bob') AND verified = 'true'", $compiled);
+    }
 }

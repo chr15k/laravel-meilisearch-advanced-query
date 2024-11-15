@@ -98,6 +98,32 @@ class MeilisearchQuery implements QueryBuilder
     }
 
     /**
+     * Add a raw "AND" Meilisearch query to the builder.
+     */
+    public function whereRaw(string $query): self
+    {
+        return $this->raw($query);
+    }
+
+    /**
+     * Add a raw "OR" Meilisearch query to the builder.
+     */
+    public function orWhereRaw(string $query): self
+    {
+        return $this->raw($query, 'OR');
+    }
+
+    /**
+     * Add raw expression to the builder.
+     */
+    protected function raw(string $query, string $boolean = 'AND'): self
+    {
+        $this->segments[] = new RawExpression($query, $boolean, empty($this->segments));
+
+        return $this;
+    }
+
+    /**
      * Ensure that the for() method has been called before proceeding.
      *
      * @throws InvalidArgumentException
