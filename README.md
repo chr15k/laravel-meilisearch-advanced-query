@@ -2,18 +2,13 @@
 
 [![Latest Stable Version](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/v)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![Total Downloads](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/downloads)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![Latest Unstable Version](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/v/unstable)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![License](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/license)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![PHP Version Require](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/require/php)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query)
 
-I wrote this package to help with generating more refined Meilisearch queries using an intuitive query builder (replacing the need to construct your own raw Meilisearch queries when working with Scout's advanced filter option), check out the [Usage](https://github.com/chr15k/laravel-meilisearch-advanced-query?tab=readme-ov-file#usage) section below :)
+This library provides an intuitive query builder that makes generating more complex Meilisearch queries (compound, nested, meilisearch specific operators, ranking etc.) easier, replacing the need to construct raw Meilisearch queries when working with Scout's advanced filter option. Check out the [Usage](https://github.com/chr15k/laravel-meilisearch-advanced-query?tab=readme-ov-file#usage) section below :)
 
----
-
-**NOTE** - This packages assumes you have installed and setup the following:
-
--   [Laravel Scout](https://laravel.com/docs/11.x/scout)
--   [Meilisearch driver](https://laravel.com/docs/11.x/scout#meilisearch)
-
----
-
-###
+> [!NOTE]
+> This package assumes you have installed and setup the following:
+>
+> 1. [Laravel Scout](https://laravel.com/docs/11.x/scout)
+> 2. [Meilisearch driver](https://laravel.com/docs/11.x/scout#meilisearch)
 
 ## Install
 
@@ -23,7 +18,10 @@ composer require chr15k/laravel-meilisearch-advanced-query
 
 ## Usage
 
-[Go here](https://laravel.com/docs/11.x/scout#customizing-engine-searches) to see how custom search engine queries are used with Laravel Scout.
+For context, [go here](https://laravel.com/docs/11.x/scout#customizing-engine-searches) to see how custom search engine queries are typically used with Laravel Scout.
+
+> [!NOTE]
+> The following example effectively replaces the standard `User::search($term, $callback)` method and will return a Scout Builder instance after calling `search()` as expected:
 
 ```php
 <?php
@@ -42,9 +40,6 @@ $builder = MeilisearchQuery::for(User::class)
 // continue to chain Scout methods
 $results = $builder->paginate();
 ```
-
-> [!NOTE]
-> The above example replaces the standard `User::search($term, $callback)` method
 
 ## Builder Methods
 
