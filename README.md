@@ -184,6 +184,26 @@ MeilisearchQuery::for(User::class)
 // "name = 'Chris' OR name = 'Bob'"
 ```
 
+#### # whereGeoRadius([lat, lng], radius)
+```php
+MeilisearchQuery::for(Hotel::class)
+  ->where('active', true)
+  ->whereGeoRadius([45.810741058569405, 9.086351912290523], 20000)
+  ->search();
+  
+// "active = true AND _geoRadius(45.810741058569405, 9.086351912290523, 20000)"
+```
+
+#### # whereGeoBoundingBox([lat, lng], [lat, lng])
+```php
+MeilisearchQuery::for(Hotel::class)
+  ->where('active', true)
+  ->whereGeoBoundingBox([45.810741058569405, 9.086351912290523], [45.810741058569405, 9.086351912290523])
+  ->search();
+  
+// "active = true AND _geoBoundingBox([45.810741058569405, 9.086351912290523], [45.810741058569405, 9.086351912290523])"
+```
+
 #### # whereExists(column)
 
 #### # orWhereExists(column)
