@@ -1,7 +1,7 @@
 ## 2.2.0 - 2025-05-21
 
 - Added new `whereGeo*` methods by [@giuseppecastaldo](https://github.com/giuseppecastaldo) in https://github.com/chr15k/laravel-meilisearch-advanced-query/pull/1
-- Added PHPStan, Pint, Rector, and Laravel 12 support in https://github.com/chr15k/laravel-meilisearch-advanced-query/pull/2
+- Added PHPStan, Pint, Rector, Github workflow, and Laravel 12 support by [@chr15k](https://github.com/chr15k) in https://github.com/chr15k/laravel-meilisearch-advanced-query/pull/2
 
 
 ## 2.1.0 - 2024-11-15
