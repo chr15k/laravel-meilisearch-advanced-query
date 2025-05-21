@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Chr15k\MeilisearchAdvancedQuery\Tests\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Scout\Searchable;
 
-class User extends Model
+final class User extends Model
 {
     use Searchable;
 }
