@@ -116,86 +116,32 @@ class MeilisearchQuery implements QueryBuilder
     /**
      * Add a raw "AND" __geoRadius filter to the builder.
      */
-    public function whereGeoRadius(array $coordinates, float $distanceInMeters): self
+    public function whereGeoRadius(float $latitude, float $longitude, float $distanceInMeters): self
     {
-        if (
-            count($coordinates) !== 2 ||
-            !isset($coordinates[0], $coordinates[1]) ||
-            !is_float($coordinates[0]) ||
-            !is_float($coordinates[1])
-        ) {
-            throw new InvalidArgumentException('You must provide an array with two float values: [latitude, longitude].');
-        }
-
-        [$latitude, $longitude] = $coordinates;
-
         return $this->whereRaw("_geoRadius($latitude, $longitude, $distanceInMeters)");
     }
 
     /**
      * Add a raw "OR" __geoRadius filter to the builder.
      */
-    public function orWhereGeoRadius(array $coordinates, float $distanceInMeters): self
+    public function orWhereGeoRadius(float $latitude, float $longitude, float $distanceInMeters): self
     {
-        if (
-            count($coordinates) !== 2 ||
-            !isset($coordinates[0], $coordinates[1]) ||
-            !is_float($coordinates[0]) ||
-            !is_float($coordinates[1])
-        ) {
-            throw new InvalidArgumentException('You must provide an array with two float values: [latitude, longitude].');
-        }
-
-        [$latitude, $longitude] = $coordinates;
-
         return $this->orWhereRaw("_geoRadius($latitude, $longitude, $distanceInMeters)");
     }
 
     /**
      * Add a raw "AND" __geoBoundingBox filter to the builder.
      */
-    public function whereGeoBoundingBox(array $coordinates1, array $coordinates2): self
+    public function whereGeoBoundingBox(float $latitude1, float $longitude1, float $latitude2, float $longitude2): self
     {
-        if (
-            count($coordinates1) !== 2 ||
-            count($coordinates2) !== 2 ||
-            !isset($coordinates1[0], $coordinates1[1]) ||
-            !isset($coordinates2[0], $coordinates2[1]) ||
-            !is_float($coordinates1[0]) ||
-            !is_float($coordinates1[1]) ||
-            !is_float($coordinates2[0]) ||
-            !is_float($coordinates2[1])
-        ) {
-            throw new InvalidArgumentException('You must provide two arrays with two float values each: [latitude, longitude].');
-        }
-
-        [$latitude1, $longitude1] = $coordinates1;
-        [$latitude2, $longitude2] = $coordinates2;
-
         return $this->whereRaw("_geoBoundingBox([$latitude1, $longitude1], [$latitude2, $longitude2])");
     }
 
     /**
      * Add a raw "OR" __geoBoundingBox filter to the builder.
      */
-    public function orWhereGeoBoundingBox(array $coordinates1, array $coordinates2): self
+    public function orWhereGeoBoundingBox(float $latitude1, float $longitude1, float $latitude2, float $longitude2): self
     {
-        if (
-            count($coordinates1) !== 2 ||
-            count($coordinates2) !== 2 ||
-            !isset($coordinates1[0], $coordinates1[1]) ||
-            !isset($coordinates2[0], $coordinates2[1]) ||
-            !is_float($coordinates1[0]) ||
-            !is_float($coordinates1[1]) ||
-            !is_float($coordinates2[0]) ||
-            !is_float($coordinates2[1])
-        ) {
-            throw new InvalidArgumentException('You must provide two arrays with two float values each: [latitude, longitude].');
-        }
-
-        [$latitude1, $longitude1] = $coordinates1;
-        [$latitude2, $longitude2] = $coordinates2;
-
         return $this->orWhereRaw("_geoBoundingBox([$latitude1, $longitude1], [$latitude2, $longitude2])");
     }
 
