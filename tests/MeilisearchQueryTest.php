@@ -273,4 +273,42 @@ final class MeilisearchQueryTest extends TestCase
 
         $this->assertSame("email = 'chris@example.com' AND (name = 'Chris' OR name = 'Bob') AND verified = 'true'", $compiled);
     }
+
+    public function testWhereGeoRadius()
+    {
+        $compiled = MeilisearchQuery::for(User::class)
+            ->whereGeoRadius(48.8566, 2.3522, 1000)
+            ->compile();
+
+        $this->assertSame("_geoRadius(48.8566, 2.3522, 1000)", $compiled);
+    }
+
+    public function testOrWhereGeoRadius()
+    {
+        $compiled = MeilisearchQuery::for(User::class)
+            ->where('name', 'Chris')
+            ->orWhereGeoRadius(48.8566, 2.3522, 1000)
+            ->compile();
+
+        $this->assertSame("name = 'Chris' OR _geoRadius(48.8566, 2.3522, 1000)", $compiled);
+    }
+
+    public function testWhereGeoBoundingBox()
+    {
+        $compiled = MeilisearchQuery::for(User::class)
+            ->whereGeoBoundingBox(48.8566, 2.3522, 48.9, 2.4)
+            ->compile();
+
+        $this->assertSame("_geoBoundingBox([48.8566, 2.3522], [48.9, 2.4])", $compiled);
+    }
+
+    public function testOrWhereGeoBoundingBox()
+    {
+        $compiled = MeilisearchQuery::for(User::class)
+            ->where('name', 'Chris')
+            ->orWhereGeoBoundingBox(48.8566, 2.3522, 48.9, 2.4)
+            ->compile();
+
+        $this->assertSame("name = 'Chris' OR _geoBoundingBox([48.8566, 2.3522], [48.9, 2.4])", $compiled);
+    }
 }

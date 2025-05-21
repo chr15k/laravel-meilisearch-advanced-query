@@ -114,6 +114,38 @@ class MeilisearchQuery implements QueryBuilder
     }
 
     /**
+     * Add a raw "AND" __geoRadius filter to the builder.
+     */
+    public function whereGeoRadius(float $latitude, float $longitude, float $distanceInMeters): self
+    {
+        return $this->whereRaw("_geoRadius($latitude, $longitude, $distanceInMeters)");
+    }
+
+    /**
+     * Add a raw "OR" __geoRadius filter to the builder.
+     */
+    public function orWhereGeoRadius(float $latitude, float $longitude, float $distanceInMeters): self
+    {
+        return $this->orWhereRaw("_geoRadius($latitude, $longitude, $distanceInMeters)");
+    }
+
+    /**
+     * Add a raw "AND" __geoBoundingBox filter to the builder.
+     */
+    public function whereGeoBoundingBox(float $latitude1, float $longitude1, float $latitude2, float $longitude2): self
+    {
+        return $this->whereRaw("_geoBoundingBox([$latitude1, $longitude1], [$latitude2, $longitude2])");
+    }
+
+    /**
+     * Add a raw "OR" __geoBoundingBox filter to the builder.
+     */
+    public function orWhereGeoBoundingBox(float $latitude1, float $longitude1, float $latitude2, float $longitude2): self
+    {
+        return $this->orWhereRaw("_geoBoundingBox([$latitude1, $longitude1], [$latitude2, $longitude2])");
+    }
+
+    /**
      * Add raw expression to the builder.
      */
     protected function raw(string $query, string $boolean = 'AND'): self
