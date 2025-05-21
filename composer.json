@@ -20,13 +20,16 @@
     "require": {
         "php": "^8.0",
         "http-interop/http-factory-guzzle": "^1.2",
-        "illuminate/support": "^8.0|^9.0|^10.0|^11.0",
+        "illuminate/support": "^8.0|^9.0|^10.0|^11.0|^12.0",
         "laravel/scout": "^8.0|^9.0|^10.0",
         "meilisearch/meilisearch-php": "^1.11"
     },
     "require-dev": {
-        "orchestra/testbench": "^9.5",
-        "phpunit/phpunit": "^9.6|^10.5|^11.4"
+        "laravel/pint": "^1.22",
+        "orchestra/testbench": "^9.5|^10.0",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^9.6|^10.5|^11.4",
+        "rector/rector": "^2.0"
     },
     "autoload": {
         "psr-4": {
@@ -45,7 +48,18 @@
         }
     },
     "scripts": {
-        "test": "phpunit tests"
+        "refactor": "rector",
+        "lint": "pint",
+        "test:refactor": "rector --dry-run",
+        "test:lint": "pint --test",
+        "test:types": "phpstan analyse --ansi",
+        "test:unit": "phpunit tests",
+        "test": [
+            "@test:refactor",
+            "@test:lint",
+            "@test:types",
+            "@test:unit"
+        ]
     },
     "minimum-stability": "dev",
     "prefer-stable": true

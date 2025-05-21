@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Chr15k\MeilisearchAdvancedQuery;
 
 use Chr15k\MeilisearchAdvancedQuery\Contracts\QuerySegment;
 
-class NestedExpression implements QuerySegment
+final class NestedExpression implements QuerySegment
 {
     public function __construct(
         /** @var Expression[] */
@@ -18,7 +20,9 @@ class NestedExpression implements QuerySegment
         return trim(sprintf(
             '%s (%s)',
             $this->init ? '' : $this->boolean,
-            collect($this->expressions)->map->compile()->implode(' ')
+            collect($this->expressions)
+                ->map(fn (QuerySegment $expression): string => $expression->compile())
+                ->implode(' ')
         ));
     }
 }

@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Chr15k\MeilisearchAdvancedQuery;
 
 use Chr15k\MeilisearchAdvancedQuery\Contracts\QuerySegment;
 
-class RawExpression implements QuerySegment
+final class RawExpression implements QuerySegment
 {
     public function __construct(
         public string $rawQuery,

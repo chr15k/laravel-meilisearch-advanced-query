@@ -1,25 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Chr15k\MeilisearchAdvancedQuery;
 
+use Chr15k\MeilisearchAdvancedQuery\Contracts\QueryBuilder;
+use Chr15k\MeilisearchAdvancedQuery\Contracts\QuerySegment;
 use Closure;
+use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
 use Laravel\Scout\Searchable;
 use Meilisearch\Endpoints\Indexes;
-use Illuminate\Database\Eloquent\Model;
-use Chr15k\MeilisearchAdvancedQuery\Contracts\QueryBuilder;
-use Chr15k\MeilisearchAdvancedQuery\Contracts\QuerySegment;
 
-class MeilisearchQuery implements QueryBuilder
+final class MeilisearchQuery implements QueryBuilder
 {
     /** @var QuerySegment[] */
-    protected array $segments = [];
+    private array $segments = [];
 
-    /** @var null|string[] */
-    protected ?array $sort = [];
+    /** @var string[] */
+    private array $sort = [];
 
-    /** @var null|Model */
-    protected $model;
+    private ?Model $model = null;
 
     private function __construct(public bool $compilable = true) {}
 
@@ -64,7 +65,7 @@ class MeilisearchQuery implements QueryBuilder
         if ($column instanceof Closure) {
 
             $this->segments[] = new NestedExpression(
-                $column(new self(false))->segments, $boolean, empty($this->segments)
+                $column(new self(false))->segments, $boolean, $this->segments === []
             );
 
             return $this;
@@ -75,7 +76,7 @@ class MeilisearchQuery implements QueryBuilder
         );
 
         $this->segments[] = new Expression(
-            $column, $value, $operator, $boolean, empty($this->segments)
+            $column, $value, $operator, $boolean, $this->segments === []
         );
 
         return $this;
@@ -94,6 +95,7 @@ class MeilisearchQuery implements QueryBuilder
      */
     public function search(string $term = ''): \Laravel\Scout\Builder
     {
+        /** @phpstan-ignore staticMethod.notFound */
         return $this->model::search($term, $this->callback());
     }
 
@@ -143,43 +145,6 @@ class MeilisearchQuery implements QueryBuilder
     public function orWhereGeoBoundingBox(float $latitude1, float $longitude1, float $latitude2, float $longitude2): self
     {
         return $this->orWhereRaw("_geoBoundingBox([$latitude1, $longitude1], [$latitude2, $longitude2])");
-    }
-
-    /**
-     * Add raw expression to the builder.
-     */
-    protected function raw(string $query, string $boolean = 'AND'): self
-    {
-        $this->segments[] = new RawExpression($query, $boolean, empty($this->segments));
-
-        return $this;
-    }
-
-    /**
-     * Ensure that the for() method has been called before proceeding.
-     *
-     * @throws InvalidArgumentException
-     */
-    protected function ensureModelIsSet()
-    {
-        if (! $this->model && $this->compilable) {
-            throw new InvalidArgumentException('You must call MeilisearchQuery::for() with a valid model before using this method.');
-        }
-    }
-
-    /**
-     * Return a callback for Scout based on the compiled query.
-     */
-    protected function callback(): Closure
-    {
-        $filter = $this->compile();
-
-        return function (Indexes $meilisearch, $query, $options) use ($filter) {
-            $options['filter'] = $filter;
-            $options['sort'] = $this->sort;
-
-            return $meilisearch->search($query, $options);
-        };
     }
 
     /**
@@ -326,26 +291,64 @@ class MeilisearchQuery implements QueryBuilder
         return [
             'segments' => $this->segments,
             'sort' => $this->sort,
-            'model' => $this->model
+            'model' => $this->model,
         ];
     }
 
     /**
      * Dump the builder properties.
      */
-    public function dump()
+    public function dump(): void
     {
         dump($this->inspect());
     }
 
     /**
+     * Add raw expression to the builder.
+     */
+    private function raw(string $query, string $boolean = 'AND'): self
+    {
+        $this->segments[] = new RawExpression($query, $boolean, $this->segments === []);
+
+        return $this;
+    }
+
+    /**
+     * Ensure that the for() method has been called before proceeding.
+     *
+     * @throws InvalidArgumentException
+     */
+    private function ensureModelIsSet(): void
+    {
+        if (! $this->model instanceof Model && $this->compilable) {
+            throw new InvalidArgumentException('You must call MeilisearchQuery::for() with a valid model before using this method.');
+        }
+    }
+
+    /**
+     * Return a callback for Scout based on the compiled query.
+     */
+    private function callback(): Closure
+    {
+        $filter = $this->compile();
+
+        return function (Indexes $meilisearch, $query, array $options) use ($filter) {
+            $options['filter'] = $filter;
+            $options['sort'] = $this->sort;
+
+            return $meilisearch->search($query, $options);
+        };
+    }
+
+    /**
      * Prepare the value and operator for a where clause.
      */
-    protected function prepareValueAndOperator(mixed $value, mixed $operator, bool $useDefault = false): array
+    private function prepareValueAndOperator(mixed $value, mixed $operator, bool $useDefault = false): array
     {
         if ($useDefault) {
             return [$operator, '='];
-        } elseif ($this->invalidOperatorAndValue($operator, $value)) {
+        }
+        if ($this->invalidOperatorAndValue($operator, $value)) {
             throw new InvalidArgumentException('Illegal operator and value combination.');
         }
 
@@ -355,9 +358,13 @@ class MeilisearchQuery implements QueryBuilder
     /**
      * Determine if the given operator and arg count combination should use the default operator and value.
      */
-    protected function shouldUseDefaultValueAndOperator(int $argCount, ?string $operator): bool
+    private function shouldUseDefaultValueAndOperator(int $argCount, mixed $operator): bool
     {
-        return $argCount === 2 && ! in_array(strtolower($operator ?? ''), self::OPERATORS_COLUMN_ONLY);
+        if (is_string($operator) === false) {
+            return true;
+        }
+
+        return $argCount === 2 && ! in_array(strtolower($operator), self::OPERATORS_COLUMN_ONLY);
     }
 
     /**
@@ -365,8 +372,10 @@ class MeilisearchQuery implements QueryBuilder
      *
      * Prevents using Null values with invalid operators.
      */
-    protected function invalidOperatorAndValue(?string $operator, mixed $value): bool
+    private function invalidOperatorAndValue(mixed $operator, mixed $value): bool
     {
-        return is_null($value) && in_array(strtolower($operator ?? ''), self::OPERATORS);
+        $operator = is_string($operator) ? strtolower($operator) : $operator;
+
+        return is_null($value) && in_array($operator ?? '', self::OPERATORS);
     }
 }
