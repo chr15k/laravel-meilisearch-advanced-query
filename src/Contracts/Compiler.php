@@ -9,5 +9,5 @@ interface Compiler
     public function compile(Node $node, bool $isFirst = false): string;
 
     /** @param list<Node> $nodes */
-    public function compileAll(array $nodes): string;
+    public function compileAll(iterable $nodes): string;
 }

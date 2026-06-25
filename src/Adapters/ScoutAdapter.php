@@ -63,6 +63,7 @@ final readonly class ScoutAdapter implements SearchAdapter
      */
     public function callback(string $filter, array $sort): Closure
     {
+        // The $engine parameter is intentionally untyped. Typehinting a specific
         // engine (e.g. Meilisearch\Endpoints\Indexes) would couple this adapter
         // to a concrete Scout engine implementation. Scout passes the underlying
         // engine instance at runtime, so we suppress the PHPStan error here as
