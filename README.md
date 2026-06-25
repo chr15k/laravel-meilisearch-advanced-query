@@ -1,9 +1,21 @@
-# Laravel Meilisearch Advanced Query
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="art/header-dark.png">
+    <img alt="Logo for php typos" src="art/header-light.png">
+</picture>
 
-[![Latest Stable Version](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/v)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query)
-[![Total Downloads](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/downloads)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query)
-[![License](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/license)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query)
-[![PHP Version Require](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/require/php)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query)
+<p align="center">
+    <p align="center">
+        <a href="https://github.com/chr15k/laravel-meilisearch-advanced-query/actions"><img alt="GitHub Workflow Status (master)" src="https://img.shields.io/github/actions/workflow/status/chr15k/laravel-meilisearch-advanced-query/main.yml"></a>
+        <a href="https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query"><img alt="Total Downloads" src="https://img.shields.io/packagist/dt/chr15k/laravel-meilisearch-advanced-query"></a>
+        <a href="https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query"><img alt="Latest Version" src="https://img.shields.io/packagist/v/chr15k/laravel-meilisearch-advanced-query"></a>
+        <a href="https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query"><img alt="License" src="https://img.shields.io/github/license/chr15k/laravel-meilisearch-advanced-query"></a>
+    </p>
+</p>
+
+------
+
+
+# Laravel Meilisearch Advanced Query
 
 A fluent query builder for Meilisearch filter expressions in Laravel. Handles compound conditions, nested groups, range queries, geo filters, and all Meilisearch-specific operators — without writing raw filter strings by hand.
 
