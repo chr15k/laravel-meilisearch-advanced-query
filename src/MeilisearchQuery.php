@@ -4,378 +4,186 @@ declare(strict_types=1);
 
 namespace Chr15k\MeilisearchAdvancedQuery;
 
-use Chr15k\MeilisearchAdvancedQuery\Contracts\QueryBuilder;
-use Chr15k\MeilisearchAdvancedQuery\Contracts\QuerySegment;
+use Chr15k\MeilisearchAdvancedQuery\Compilers\MeilisearchCompiler;
+use Chr15k\MeilisearchAdvancedQuery\Contracts\Node;
+use Chr15k\MeilisearchAdvancedQuery\Contracts\Query;
+use Chr15k\MeilisearchAdvancedQuery\Enums\BooleanOperator;
+use Chr15k\MeilisearchAdvancedQuery\Enums\Operator;
+use Chr15k\MeilisearchAdvancedQuery\Nodes\BetweenNode;
+use Chr15k\MeilisearchAdvancedQuery\Nodes\ComparisonNode;
+use Chr15k\MeilisearchAdvancedQuery\Nodes\GroupNode;
+use Chr15k\MeilisearchAdvancedQuery\Nodes\InNode;
+use Chr15k\MeilisearchAdvancedQuery\Nodes\NotInNode;
+use Chr15k\MeilisearchAdvancedQuery\Nodes\RawNode;
 use Closure;
-use Illuminate\Database\Eloquent\Model;
-use InvalidArgumentException;
-use Laravel\Scout\Searchable;
-use Meilisearch\Endpoints\Indexes;
 
-final class MeilisearchQuery implements QueryBuilder
+final class MeilisearchQuery implements Query
 {
-    /** @var QuerySegment[] */
-    private array $segments = [];
+    /** @var list<Node> */
+    private array $nodeList = [];
 
-    /** @var string[] */
-    private array $sort = [];
-
-    private ?Model $model = null;
-
-    private function __construct(public bool $compilable = true) {}
-
-    /**
-     * {@inheritDoc}
-     */
-    public static function for(string $modelClass): self
+    public static function build(): self
     {
-        if (! class_exists($modelClass)) {
-            throw new InvalidArgumentException("The class $modelClass does not exist.");
-        }
-
-        $modelInstance = new $modelClass;
-        if (! $modelInstance instanceof Model) {
-            throw new InvalidArgumentException(
-                "The class $modelClass must be an instance of Illuminate\Database\Eloquent\Model."
-            );
-        }
-
-        if (! in_array(Searchable::class, class_uses_recursive($modelInstance))) {
-            throw new InvalidArgumentException("The class $modelClass must be a searchable model.");
-        }
-
-        $instance = new self;
-        $instance->model = $modelInstance;
-
-        return $instance;
+        return new self;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** @return list<Node> */
+    public function nodes(): array
+    {
+        return $this->nodeList;
+    }
+
+    public function compile(): string
+    {
+        return (new MeilisearchCompiler)->compileAll($this->nodeList);
+    }
+
     public function where(
-        string|Closure $column,
-        mixed $operator = '=',
-        mixed $value = null,
-        string $boolean = 'AND'
+        string|Closure $field,
+        Operator $operator = Operator::EQ,
+        string|int|float|bool|null $value = null,
+        BooleanOperator $boolean = BooleanOperator::And,
     ): self {
-
-        $this->ensureModelIsSet();
-
-        if ($column instanceof Closure) {
-
-            $this->segments[] = new NestedExpression(
-                $column(new self(false))->segments, $boolean, $this->segments === []
-            );
+        if ($field instanceof Closure) {
+            $nested = new self;
+            $field($nested);
+            $this->nodeList[] = new GroupNode($nested->nodeList, $boolean);
 
             return $this;
         }
 
-        [$value, $operator] = $this->prepareValueAndOperator(
-            $value, $operator, $this->shouldUseDefaultValueAndOperator(func_num_args(), $operator)
-        );
-
-        $this->segments[] = new Expression(
-            $column, $value, $operator, $boolean, $this->segments === []
-        );
+        $this->nodeList[] = new ComparisonNode($field, $operator, $value, $boolean);
 
         return $this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function compile(): string|self
-    {
-        return $this->compilable ? (new QueryCompiler)($this->segments) : $this;
+    public function orWhere(
+        string|Closure $field,
+        Operator $operator = Operator::EQ,
+        string|int|float|bool|null $value = null,
+    ): self {
+        return $this->where($field, $operator, $value, BooleanOperator::Or);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function search(string $term = ''): \Laravel\Scout\Builder
+    public function whereIn(string $field, array $values): self
     {
-        /** @phpstan-ignore staticMethod.notFound */
-        return $this->model::search($term, $this->callback());
+        $this->nodeList[] = new InNode($field, $values, BooleanOperator::And);
+
+        return $this;
     }
 
-    /**
-     * Add a raw "AND" Meilisearch query to the builder.
-     */
+    public function orWhereIn(string $field, array $values): self
+    {
+        $this->nodeList[] = new InNode($field, $values, BooleanOperator::Or);
+
+        return $this;
+    }
+
+    public function whereNotIn(string $field, array $values): self
+    {
+        $this->nodeList[] = new NotInNode($field, $values, BooleanOperator::And);
+
+        return $this;
+    }
+
+    public function orWhereNotIn(string $field, array $values): self
+    {
+        $this->nodeList[] = new NotInNode($field, $values, BooleanOperator::Or);
+
+        return $this;
+    }
+
+    public function whereNot(string $field, string|int|float|bool|null $value): self
+    {
+        return $this->where($field, Operator::NOT, $value);
+    }
+
+    public function orWhereNot(string $field, string|int|float|bool|null $value): self
+    {
+        return $this->where($field, Operator::NOT, $value, BooleanOperator::Or);
+    }
+
+    public function whereBetween(
+        string $field,
+        string|int|float|bool|null $from,
+        string|int|float|bool|null $to
+    ): self {
+        $this->nodeList[] = new BetweenNode($field, $from, $to, BooleanOperator::And);
+
+        return $this;
+    }
+
+    public function orWhereBetween(
+        string $field,
+        string|int|float|bool|null $from,
+        string|int|float|bool|null $to
+    ): self {
+        $this->nodeList[] = new BetweenNode($field, $from, $to, BooleanOperator::Or);
+
+        return $this;
+    }
+
+    public function whereExists(string $field): self
+    {
+        return $this->where($field, Operator::EXISTS);
+    }
+
+    public function orWhereExists(string $field): self
+    {
+        return $this->where($field, Operator::EXISTS, null, BooleanOperator::Or);
+    }
+
+    public function whereIsNull(string $field): self
+    {
+        return $this->where($field, Operator::NULL);
+    }
+
+    public function orWhereIsNull(string $field): self
+    {
+        return $this->where($field, Operator::NULL, null, BooleanOperator::Or);
+    }
+
+    public function whereIsEmpty(string $field): self
+    {
+        return $this->where($field, Operator::EMPTY);
+    }
+
+    public function orWhereIsEmpty(string $field): self
+    {
+        return $this->where($field, Operator::EMPTY, null, BooleanOperator::Or);
+    }
+
     public function whereRaw(string $query): self
     {
-        return $this->raw($query);
+        $this->nodeList[] = new RawNode($query, BooleanOperator::And);
+
+        return $this;
     }
 
-    /**
-     * Add a raw "OR" Meilisearch query to the builder.
-     */
     public function orWhereRaw(string $query): self
     {
-        return $this->raw($query, 'OR');
-    }
-
-    /**
-     * Add a raw "AND" __geoRadius filter to the builder.
-     */
-    public function whereGeoRadius(float $latitude, float $longitude, float $distanceInMeters): self
-    {
-        return $this->whereRaw("_geoRadius($latitude, $longitude, $distanceInMeters)");
-    }
-
-    /**
-     * Add a raw "OR" __geoRadius filter to the builder.
-     */
-    public function orWhereGeoRadius(float $latitude, float $longitude, float $distanceInMeters): self
-    {
-        return $this->orWhereRaw("_geoRadius($latitude, $longitude, $distanceInMeters)");
-    }
-
-    /**
-     * Add a raw "AND" __geoBoundingBox filter to the builder.
-     */
-    public function whereGeoBoundingBox(float $latitude1, float $longitude1, float $latitude2, float $longitude2): self
-    {
-        return $this->whereRaw("_geoBoundingBox([$latitude1, $longitude1], [$latitude2, $longitude2])");
-    }
-
-    /**
-     * Add a raw "OR" __geoBoundingBox filter to the builder.
-     */
-    public function orWhereGeoBoundingBox(float $latitude1, float $longitude1, float $latitude2, float $longitude2): self
-    {
-        return $this->orWhereRaw("_geoBoundingBox([$latitude1, $longitude1], [$latitude2, $longitude2])");
-    }
-
-    /**
-     * Add an "or where" clause to the segments array.
-     */
-    public function orWhere(string|Closure $column, ?string $operator = null, mixed $value = null): self
-    {
-        [$value, $operator] = $this->prepareValueAndOperator(
-            $value, $operator, $this->shouldUseDefaultValueAndOperator(func_num_args(), $operator)
-        );
-
-        return $this->where($column, $operator, $value, 'OR');
-    }
-
-    /**
-     * Add a "where IN" clause to the segments array.
-     */
-    public function whereIn(string|Closure $column, mixed $value = null): self
-    {
-        return $this->where($column, 'IN', $value);
-    }
-
-    /**
-     * Add a "OR where IN" clause to the segments array.
-     */
-    public function orWhereIn(string|Closure $column, mixed $value = null): self
-    {
-        return $this->where($column, 'IN', $value, 'OR');
-    }
-
-    /**
-     * Add a "where NOT IN" clause to the segments array.
-     */
-    public function whereNotIn(string|Closure $column, mixed $value = null): self
-    {
-        return $this->where($column, 'NOT IN', $value);
-    }
-
-    /**
-     * Add a "OR where NOT IN" clause to the segments array.
-     */
-    public function orWhereNotIn(string|Closure $column, mixed $value = null): self
-    {
-        return $this->where($column, 'NOT IN', $value, 'OR');
-    }
-
-    /**
-     * Add a "where NOT" clause to the segments array.
-     */
-    public function whereNot(string|Closure $column, mixed $value = null): self
-    {
-        return $this->where($column, 'NOT', $value);
-    }
-
-    /**
-     * Add a "OR where NOT" clause to the segments array.
-     */
-    public function orWhereNot(string|Closure $column, mixed $value = null): self
-    {
-        return $this->where($column, 'NOT', $value, 'OR');
-    }
-
-    /**
-     * Add a "where EXISTS" clause to the segments array.
-     */
-    public function whereExists(string|Closure $column): self
-    {
-        return $this->where($column, 'EXISTS');
-    }
-
-    /**
-     * Add a "OR where EXISTS" clause to the segments array.
-     */
-    public function orWhereExists(string|Closure $column): self
-    {
-        return $this->where($column, 'EXISTS', null, 'OR');
-    }
-
-    /**
-     * Add a "where IS NULL" clause to the segments array.
-     */
-    public function whereIsNull(string|Closure $column): self
-    {
-        return $this->where($column, 'IS NULL');
-    }
-
-    /**
-     * Add a "OR where IS NULL" clause to the segments array.
-     */
-    public function orWhereIsNull(string|Closure $column): self
-    {
-        return $this->where($column, 'IS NULL', null, 'OR');
-    }
-
-    /**
-     * Add a "where IS EMPTY" clause to the segments array.
-     */
-    public function whereIsEmpty(string|Closure $column): self
-    {
-        return $this->where($column, 'IS EMPTY');
-    }
-
-    /**
-     * Add a "OR where IS EMPTY" clause to the segments array.
-     */
-    public function orWhereIsEmpty(string|Closure $column): self
-    {
-        return $this->where($column, 'IS EMPTY', null, 'OR');
-    }
-
-    /**
-     * Add a "where TO" clause to the segments array.
-     */
-    public function whereTo(string|Closure $column, mixed $from, mixed $to): self
-    {
-        return $this->where($column, 'TO', [$from, $to]);
-    }
-
-    /**
-     * Add a "OR where TO" clause to the segments array.
-     */
-    public function orWhereTo(string|Closure $column, mixed $from, mixed $to): self
-    {
-        return $this->where($column, 'TO', [$from, $to], 'OR');
-    }
-
-    /**
-     * Add a sort clause to the builder instance.
-     */
-    public function sort(array|string $sort): self
-    {
-        $this->ensureModelIsSet();
-
-        $this->sort = (array) $sort;
+        $this->nodeList[] = new RawNode($query, BooleanOperator::Or);
 
         return $this;
     }
 
-    /**
-     * Inspect the builder properties.
-     */
-    public function inspect(): array
+    public function whereGeoRadius(float $lat, float $lng, float $distanceInMeters): self
     {
-        return [
-            'segments' => $this->segments,
-            'sort' => $this->sort,
-            'model' => $this->model,
-        ];
+        return $this->whereRaw(sprintf('_geoRadius(%s, %s, %s)', $lat, $lng, $distanceInMeters));
     }
 
-    /**
-     * Dump the builder properties.
-     */
-    public function dump(): void
+    public function orWhereGeoRadius(float $lat, float $lng, float $distanceInMeters): self
     {
-        dump($this->inspect());
+        return $this->orWhereRaw(sprintf('_geoRadius(%s, %s, %s)', $lat, $lng, $distanceInMeters));
     }
 
-    /**
-     * Add raw expression to the builder.
-     */
-    private function raw(string $query, string $boolean = 'AND'): self
+    public function whereGeoBoundingBox(float $lat1, float $lng1, float $lat2, float $lng2): self
     {
-        $this->segments[] = new RawExpression($query, $boolean, $this->segments === []);
-
-        return $this;
+        return $this->whereRaw(sprintf('_geoBoundingBox([%s, %s], [%s, %s])', $lat1, $lng1, $lat2, $lng2));
     }
 
-    /**
-     * Ensure that the for() method has been called before proceeding.
-     *
-     * @throws InvalidArgumentException
-     */
-    private function ensureModelIsSet(): void
+    public function orWhereGeoBoundingBox(float $lat1, float $lng1, float $lat2, float $lng2): self
     {
-        if (! $this->model instanceof Model && $this->compilable) {
-            throw new InvalidArgumentException('You must call MeilisearchQuery::for() with a valid model before using this method.');
-        }
-    }
-
-    /**
-     * Return a callback for Scout based on the compiled query.
-     */
-    private function callback(): Closure
-    {
-        $filter = $this->compile();
-
-        return function (Indexes $meilisearch, $query, array $options) use ($filter) {
-            $options['filter'] = $filter;
-            $options['sort'] = $this->sort;
-
-            return $meilisearch->search($query, $options);
-        };
-    }
-
-    /**
-     * Prepare the value and operator for a where clause.
-     */
-    private function prepareValueAndOperator(mixed $value, mixed $operator, bool $useDefault = false): array
-    {
-        if ($useDefault) {
-            return [$operator, '='];
-        }
-        if ($this->invalidOperatorAndValue($operator, $value)) {
-            throw new InvalidArgumentException('Illegal operator and value combination.');
-        }
-
-        return [$value, $operator];
-    }
-
-    /**
-     * Determine if the given operator and arg count combination should use the default operator and value.
-     */
-    private function shouldUseDefaultValueAndOperator(int $argCount, mixed $operator): bool
-    {
-        if (is_string($operator) === false) {
-            return true;
-        }
-
-        return $argCount === 2 && ! in_array(strtolower($operator), self::OPERATORS_COLUMN_ONLY);
-    }
-
-    /**
-     * Determine if the given operator and value combination is legal.
-     *
-     * Prevents using Null values with invalid operators.
-     */
-    private function invalidOperatorAndValue(mixed $operator, mixed $value): bool
-    {
-        $operator = is_string($operator) ? strtolower($operator) : $operator;
-
-        return is_null($value) && in_array($operator ?? '', self::OPERATORS);
+        return $this->orWhereRaw(sprintf('_geoBoundingBox([%s, %s], [%s, %s])', $lat1, $lng1, $lat2, $lng2));
     }
 }

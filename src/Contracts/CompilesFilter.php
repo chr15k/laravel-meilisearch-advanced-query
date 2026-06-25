@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Chr15k\MeilisearchAdvancedQuery\Contracts;
 
-interface QuerySegment
+interface CompilesFilter
 {
-    public function compile(): string;
+    /** @return list<Node> */
+    public function nodes(): array;
 }
