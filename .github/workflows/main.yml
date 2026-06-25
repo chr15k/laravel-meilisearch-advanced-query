@@ -11,26 +11,34 @@ permissions:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        laravel: ['12.*', '13.*']
+
+    name: PHP 8.3 - Laravel ${{ matrix.laravel }}
+
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Validate composer.json and composer.lock
-      run: composer validate --strict
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: xdebug
 
-    - name: Cache Composer packages
-      id: composer-cache
-      uses: actions/cache@v3
-      with:
-        path: vendor
-        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-php-
+      - name: Validate composer.json and composer.lock
+        run: composer validate --strict
 
-    - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
 
-    - name: Run test suite
-      run: composer test
+      - name: Constrain Laravel version
+        run: composer require "laravel/framework:${{ matrix.laravel }}" --no-update
+
+      - name: Update dependencies
+        run: composer update --prefer-dist --no-progress
+
+      - name: Run test suite
+        run: composer test

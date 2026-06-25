@@ -1,6 +1,6 @@
 {
     "name": "chr15k/laravel-meilisearch-advanced-query",
-    "description": "Laravel Meilisearch advanced query generator",
+    "description": "Fluent AST-based query builder for Meilisearch filter expressions in Laravel.",
     "license": "MIT",
     "keywords": [
         "laravel",
@@ -13,23 +13,23 @@
     ],
     "authors": [
         {
-            "name": "Christopher Keller",
+            "name": "Chris Keller",
             "email": "ctk8501@gmail.com"
         }
     ],
     "require": {
-        "php": "^8.0",
-        "http-interop/http-factory-guzzle": "^1.2",
-        "illuminate/support": "^8.0|^9.0|^10.0|^11.0|^12.0",
-        "laravel/scout": "^8.0|^9.0|^10.0",
-        "meilisearch/meilisearch-php": "^1.11"
+        "php": "^8.3",
+        "illuminate/support": "^12.0|^13.0",
+        "laravel/scout": "^11.0",
+        "meilisearch/meilisearch-php": "^1.16"
     },
     "require-dev": {
-        "laravel/pint": "^1.22",
-        "orchestra/testbench": "^9.5|^10.0",
-        "phpstan/phpstan": "^2.1",
-        "phpunit/phpunit": "^9.6|^10.5|^11.4",
-        "rector/rector": "^2.0"
+        "laravel/pint": "^1.29",
+        "orchestra/testbench": "^10.11|^11.1",
+        "pestphp/pest": "^4.7",
+        "pestphp/pest-plugin-type-coverage": "^4.0",
+        "phpstan/phpstan": "^2.2",
+        "rector/rector": "^2.5"
     },
     "autoload": {
         "psr-4": {
@@ -44,16 +44,25 @@
     "config": {
         "sort-packages": true,
         "allow-plugins": {
+            "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Chr15k\\MeilisearchAdvancedQuery\\MeilisearchAdvancedQueryServiceProvider"
+            ]
         }
     },
     "scripts": {
         "refactor": "rector",
         "lint": "pint",
+        "fix": ["@lint", "@refactor", "@lint"],
         "test:refactor": "rector --dry-run",
         "test:lint": "pint --test",
         "test:types": "phpstan analyse --ansi",
-        "test:unit": "phpunit tests",
+        "test:unit": "pest --colors=always --coverage --parallel --min=100",
         "test": [
             "@test:refactor",
             "@test:lint",

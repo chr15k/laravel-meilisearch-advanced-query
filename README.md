@@ -1,308 +1,371 @@
-# Laravel Meilisearch Advanced Query
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="art/header-dark.png">
+    <img alt="Logo for php typos" src="art/header-light.png">
+</picture>
 
-[![Latest Stable Version](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/v)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![Total Downloads](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/downloads)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![Latest Unstable Version](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/v/unstable)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![License](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/license)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query) [![PHP Version Require](https://poser.pugx.org/chr15k/laravel-meilisearch-advanced-query/require/php)](https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query)
+<p align="center">
+    <p align="center">
+        <a href="https://github.com/chr15k/laravel-meilisearch-advanced-query/actions"><img alt="GitHub Workflow Status (master)" src="https://img.shields.io/github/actions/workflow/status/chr15k/laravel-meilisearch-advanced-query/main.yml"></a>
+        <a href="https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query"><img alt="Total Downloads" src="https://img.shields.io/packagist/dt/chr15k/laravel-meilisearch-advanced-query"></a>
+        <a href="https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query"><img alt="Latest Version" src="https://img.shields.io/packagist/v/chr15k/laravel-meilisearch-advanced-query"></a>
+        <a href="https://packagist.org/packages/chr15k/laravel-meilisearch-advanced-query"><img alt="License" src="https://img.shields.io/github/license/chr15k/laravel-meilisearch-advanced-query"></a>
+    </p>
+</p>
 
-This library provides an intuitive query builder that makes generating more complex Meilisearch queries (compound, nested, meilisearch specific operators, ranking etc.) easier, replacing the need to construct your own raw Meilisearch queries when working with Scout's advanced filter option. Check out the [Usage](https://github.com/chr15k/laravel-meilisearch-advanced-query?tab=readme-ov-file#usage) section below :)
+------
 
-> [!NOTE]
-> This package assumes you have installed and setup the following:
->
-> 1. [Laravel Scout](https://laravel.com/docs/11.x/scout)
-> 2. [Meilisearch driver](https://laravel.com/docs/11.x/scout#meilisearch)
+**Meilisearch Advanced Query** is a fluent query builder for Meilisearch filter expressions in Laravel. Handles compound conditions, nested groups, range queries, geo filters, and all Meilisearch-specific operators — without writing raw filter strings by hand.
 
-## Install
+> [!WARNING]
+> v3 contains breaking changes. If you are upgrading from v2, see the [upgrade guide](UPGRADE.md).
+
+v3 has been rebuilt on an AST (Abstract Syntax Tree) architecture: each clause is represented as a typed node, and a dedicated compiler turns the tree into a valid Meilisearch filter string. Scout integration is opt-in via `ScoutAdapter`, keeping the core compiler fully independent of any search driver.
+
+---
+
+## Requirements
+
+- PHP 8.3+
+- Laravel 12 or 13
+- Laravel Scout 11+
+- Meilisearch PHP SDK 1.16+
+
+---
+
+## Installation
 
 ```bash
 composer require chr15k/laravel-meilisearch-advanced-query
 ```
 
-## Usage
-
-For context, [go here](https://laravel.com/docs/11.x/scout#customizing-engine-searches) to see how custom search engine queries are typically used with Laravel Scout.
-
-> [!NOTE]
-> The following example effectively replaces the standard `User::search($term, $callback)` method and will return a Scout Builder instance after calling `search()` as expected:
-
-```php
-<?php
-use App\Models\User;
-use Chr15k\MeilisearchAdvancedQuery\MeilisearchQuery;
-
-$builder = MeilisearchQuery::for(User::class)
-    ->where('name', 'Chris')
-    ->whereIn('email', ['chris@example.com', 'bob@example.com'])
-    ->orWhere(fn ($query) => $query
-        ->whereTo('login_count', 50, 400)
-        ->orWhereIsEmpty('verified_at')
-    )->sort(['name:desc', 'email:asc'])
-     ->search($term); // returns Scout Builder instance
-
-// continue to chain Scout methods
-$results = $builder->paginate();
-```
-
-## Builder Methods
-
-#### # where(column, operator(optional), value(optional), boolean(optional))
-
-```php
-MeilisearchQuery::for(User::class)->where('name', 'Chris');
-
-// "name = 'Chris'"
-```
-
-#### # orWhere(column, operator(optional), value(optional))
-
-```php
-MeilisearchQuery::for(User::class)->orWhere('name', 'Chris')
-
-// "name = 'Chris'"
-
-MeilisearchQuery::for(User::class)
-    ->where('name', 'Bob')
-    ->orWhere('name', 'Chris')
-
-// "name = 'Bob' OR name = 'Chris'"
-```
-
-#### # whereIn(column, value(optional))
-
-```php
-MeilisearchQuery::for(User::class)
-    ->whereIn('name', ['Chris', 'Bob']);
-
-// "name IN ['Chris','Bob']"
-```
-
-#### # orWhereIn(column, value(optional))
-
-```php
-MeilisearchQuery::for(User::class)
-    ->orWhereIn('name', ['Chris', 'Bob']);
-
-// "name IN ['Chris','Bob']"
-
-MeilisearchQuery::for(User::class)
-    ->where('email', 'chris@example.com')
-    ->orWhereIn('name', ['Chris', 'Bob']) ;
-
-// "email = 'chris@example.com' OR name IN ['Chris','Bob']"
-```
-
-#### # whereNotIn(column, value(optional))
-
-```php
-MeilisearchQuery::for(User::class)
-    ->whereNotIn('name', ['Chris', 'Bob']);
-
-// "name NOT IN ['Chris','Bob']"
-```
-
-#### # orWhereNotIn(column, value(optional))
-
-```php
-MeilisearchQuery::for(User::class)
-    ->where('email', 'chris@example.com')
-    ->orWhereNotIn('name', ['Chris', 'Bob']);
-
-// "email = 'chris@example.com' OR name NOT IN ['Chris','Bob']"
-```
-
-#### # whereNot(column, value(optional))
-
-```php
-MeilisearchQuery::for(User::class)
-    ->whereNot('name', 'Chris');
-
-// "NOT name 'Chris'"
-```
-
-#### # orWhereNot(column, value(optional))
-
-```php
-MeilisearchQuery::for(User::class)
-    ->where('email', 'chris@example.com')
-    ->orWhereNot('name', 'Chris');
-
-// "email = 'chris@example.com' OR NOT name 'Chris'"
-```
-
-#### # whereIsEmpty(column)
-
-```php
-MeilisearchQuery::for(User::class)->whereIsEmpty('name');
-
-// "name IS EMPTY"
-```
-
-#### # orWhereIsEmpty(column)
-
-```php
-MeilisearchQuery::for(User::class)
-    ->whereNot('name', 'Chris')
-    ->orWhereIsEmpty('name');
-
-// "NOT name 'Chris' OR name IS EMPTY"
-```
-
-#### # whereTo(column, from, to)
-
-```php
-MeilisearchQuery::for(User::class)->whereTo('count', 1, 10);
-
-// "count 1 TO 10"
-```
-
-#### # orWhereTo(column, from, to)
-
-```php
-MeilisearchQuery::for(User::class)
-    ->where('email', 'chris@example.com')
-    ->orWhereTo('count', 1, 10);
-
-// "email = 'chris@example.com' OR count 1 TO 10"
-```
-
-#### # whereRaw(rawQuery)
-
-```php
-MeilisearchQuery::for(User::class)
-    ->whereRaw("name = 'Chris' OR name = 'Bob'")
-    ->compile();
-
-// "name = 'Chris' OR name = 'Bob'"
-```
-
-#### # orWhereRaw(rawQuery)
-
-```php
-MeilisearchQuery::for(User::class)
-    ->whereRaw("name = 'Chris'")
-    ->orWhereRaw("name = 'Bob'")
-    ->compile();
-
-// "name = 'Chris' OR name = 'Bob'"
-```
-
-#### # whereGeoRadius([lat, lng], radius)
-```php
-MeilisearchQuery::for(Hotel::class)
-  ->where('active', true)
-  ->whereGeoRadius([45.810741058569405, 9.086351912290523], 20000)
-  ->search();
-  
-// "active = true AND _geoRadius(45.810741058569405, 9.086351912290523, 20000)"
-```
-
-#### # whereGeoBoundingBox([lat, lng], [lat, lng])
-```php
-MeilisearchQuery::for(Hotel::class)
-  ->where('active', true)
-  ->whereGeoBoundingBox([45.810741058569405, 9.086351912290523], [45.810741058569405, 9.086351912290523])
-  ->search();
-  
-// "active = true AND _geoBoundingBox([45.810741058569405, 9.086351912290523], [45.810741058569405, 9.086351912290523])"
-```
-
-#### # whereExists(column)
-
-#### # orWhereExists(column)
-
-#### # whereIsNull(column)
-
-#### # orWhereIsNull(column)
+The service provider is registered automatically via Laravel's package discovery.
 
 ---
 
-### Nested / grouped queries
+## Usage
+
+### Building a filter string
+
+Use the `Query` facade (or resolve `MeilisearchAdvancedQuery` from the container directly) to build a filter string without touching Scout at all:
 
 ```php
-MeilisearchQuery::for(User::class)
-    ->where(fn ($query) => $query
-        ->whereNot('name', 'Chris')
-        ->orWhereIsEmpty('name')
-    )
-    ->orWhere('email', 'chris@example.com');
+use Chr15k\MeilisearchAdvancedQuery\Facades\Query;
+use Chr15k\MeilisearchAdvancedQuery\Enums\Operator;
 
-// "(NOT name 'Chris' OR name IS EMPTY) OR email = 'chris@example.com'"
+$filter = Query::where('status', Operator::EQ, 'active')
+    ->whereIn('role', ['admin', 'editor'])
+    ->whereBetween('login_count', 10, 500)
+    ->compile();
+
+// "status = 'active' AND role IN ['admin', 'editor'] AND login_count 10 TO 500"
+```
+
+### Running a Scout search
+
+Chain `forModel()` on the query builder to hand off to Scout. This returns a Scout `Builder` instance that you can continue to chain as normal:
+
+```php
+use Chr15k\MeilisearchAdvancedQuery\Facades\Query;
+use Chr15k\MeilisearchAdvancedQuery\Enums\Operator;
+use App\Models\Product;
+
+$results = Query::where('status', Operator::EQ, 'active')
+    ->whereIn('category', ['boots', 'shoes'])
+    ->forModel(Product::class)
+    ->search('leather')
+    ->paginate(20);
 ```
 
 ### Sorting
 
-In addition to the above methods, you can also call sort on the builder instance as follows:
-
-#### Single column sort:
+Pass a sort expression (or array of expressions) to `search()`:
 
 ```php
-MeilisearchQuery::for(User::class)
-    ->where('name', 'Chris')
-    ->orWhere('name', 'Bob')
-    ->sort('name:desc');
+Query::where('status', Operator::EQ, 'active')
+    ->forModel(Product::class)
+    ->search('leather', sort: ['price:asc', 'name:desc']);
 ```
 
-#### Multiple column sort:
+For Meilisearch's sort syntax, see the [sorting documentation](https://www.meilisearch.com/docs/learn/filtering_and_sorting/sort_search_results).
+
+---
+
+## The `Query` Facade
+
+The `Query` facade proxies to a fresh `MeilisearchAdvancedQuery` instance on each call, so there is no shared state between requests.
 
 ```php
-MeilisearchQuery::for(User::class)
-    ->where('name', 'Chris')
-    ->orWhere('name', 'Bob')
-    ->sort(['name:desc', 'email:asc']);
+use Chr15k\MeilisearchAdvancedQuery\Facades\Query;
 ```
 
-For more information on sorting see this [link](https://www.meilisearch.com/docs/learn/filtering_and_sorting/sort_search_results)
-
-### Supported search engine operators
-
-Docs: [Meilisearch operators](https://www.meilisearch.com/docs/learn/filtering_and_sorting/filter_expression_reference#filter-operators)
-
-```
-'=', '!=', 'IN', 'NOT IN', '>=', '<=', '>', '<', 'TO', 'NOT', 'EXISTS', 'IS EMPTY', 'IS NULL'
-```
-
-Alternatively to the methods above, any of these operators can be called on `where()` or `orWhere()` methods, example:
+You can also resolve the builder from the container directly if you prefer:
 
 ```php
-MeilisearchQuery::for(User::class)->where('name', 'NOT', 'Chris'); // "NOT name 'Chris'"
-MeilisearchQuery::for(User::class)->where('count', 'TO', [1, 10]); // "count 1 TO 10"
-MeilisearchQuery::for(User::class)->where('name', 'IS EMPTY'); // "name IS EMPTY"
+use Chr15k\MeilisearchAdvancedQuery\MeilisearchAdvancedQuery;
+
+$query = app(MeilisearchAdvancedQuery::class);
 ```
 
-Calling without operator will default to equals (same behaviour as Eloquent):
+---
+
+## Builder Methods
+
+### `where(field, operator, value, boolean)`
+
+The primary method. Operator defaults to `Operator::EQ`. Boolean defaults to `AND`.
 
 ```php
-MeilisearchQuery::for(User::class)->where('name', 'Chris'); // "name = 'Chris'"
+Query::where('name', Operator::EQ, 'Chris')->compile();
+// "name = 'Chris'"
+
+Query::where('count', Operator::GTE, 10)->compile();
+// "count >= 10"
+
+Query::where('verified', Operator::EQ, true)->compile();
+// "verified = true"
 ```
 
-## Debugging / helpers
+### `orWhere(field, operator, value)`
 
-To get the raw query string from the builder, call `compile()` instead of `search()`
+Identical to `where()` but joins with `OR`.
 
 ```php
-MeilisearchQuery::for(User::class)
-    ->where(fn ($query) => $query
-        ->whereIn('name', ['Chris', 'Bob'])
-        ->orWhereIsEmpty('verified_at')
-    )
-    ->orWhere('email', 'chris@example.com')
+Query::where('name', Operator::EQ, 'Chris')
+    ->orWhere('name', Operator::EQ, 'Bob')
     ->compile();
-
-// "(name IN ['Chris','Bob'] OR verified_at IS EMPTY) OR email = 'chris@example.com'"
+// "name = 'Chris' OR name = 'Bob'"
 ```
 
-To inspect the current builder instance properties:
+### `whereNot(field, value)` / `orWhereNot(field, value)`
+
+Negates a field equality check.
 
 ```php
-MeilisearchQuery::for(User::class)->where('name', 'Chris')->inspect();
+Query::whereNot('name', 'Chris')->compile();
+// "NOT name = 'Chris'"
+
+Query::where('verified', Operator::EQ, true)
+    ->orWhereNot('name', 'Chris')
+    ->compile();
+// "verified = true OR NOT name = 'Chris'"
 ```
 
-Or use the `dump` helper:
+### `whereIn(field, values)` / `orWhereIn(field, values)`
+
+Matches any value in the given array.
 
 ```php
-MeilisearchQuery::for(User::class)->where('name', 'Chris')->dump();
+Query::whereIn('role', ['admin', 'editor'])->compile();
+// "role IN ['admin', 'editor']"
+
+Query::where('verified', Operator::EQ, true)
+    ->orWhereIn('role', ['admin', 'editor'])
+    ->compile();
+// "verified = true OR role IN ['admin', 'editor']"
 ```
 
-## Tests
+### `whereNotIn(field, values)` / `orWhereNotIn(field, values)`
+
+Excludes any value in the given array.
+
+```php
+Query::whereNotIn('status', ['banned', 'suspended'])->compile();
+// "status NOT IN ['banned', 'suspended']"
+```
+
+### `whereBetween(field, from, to)` / `orWhereBetween(field, from, to)`
+
+Range filter using Meilisearch's `TO` operator.
+
+```php
+Query::whereBetween('price', 10, 100)->compile();
+// "price 10 TO 100"
+```
+
+### `whereExists(field)` / `orWhereExists(field)`
+
+Matches documents where the field exists.
+
+```php
+Query::whereExists('verified_at')->compile();
+// "verified_at EXISTS"
+```
+
+### `whereIsNull(field)` / `orWhereIsNull(field)`
+
+Matches documents where the field is `null`.
+
+```php
+Query::whereIsNull('deleted_at')->compile();
+// "deleted_at IS NULL"
+```
+
+### `whereIsEmpty(field)` / `orWhereIsEmpty(field)`
+
+Matches documents where the field is empty.
+
+```php
+Query::whereIsEmpty('tags')->compile();
+// "tags IS EMPTY"
+```
+
+### `whereRaw(query)` / `orWhereRaw(query)`
+
+Passes a raw filter string through the compiler unchanged. Useful for filter expressions the builder does not yet support natively.
+
+```php
+Query::whereRaw("name = 'Chris' OR name = 'Bob'")->compile();
+// "name = 'Chris' OR name = 'Bob'"
+
+Query::whereRaw("name = 'Chris'")
+    ->orWhereRaw("name = 'Bob'")
+    ->compile();
+// "name = 'Chris' OR name = 'Bob'"
+```
+
+### Geo filters
+
+#### `whereGeoRadius(lat, lng, distanceInMeters)` / `orWhereGeoRadius`
+
+```php
+Query::where('active', Operator::EQ, true)
+    ->whereGeoRadius(48.8566, 2.3522, 1000)
+    ->compile();
+// "active = true AND _geoRadius(48.8566, 2.3522, 1000)"
+```
+
+#### `whereGeoBoundingBox(lat1, lng1, lat2, lng2)` / `orWhereGeoBoundingBox`
+
+```php
+Query::where('active', Operator::EQ, true)
+    ->whereGeoBoundingBox(48.8566, 2.3522, 48.9, 2.4)
+    ->compile();
+// "active = true AND _geoBoundingBox([48.8566, 2.3522], [48.9, 2.4])"
+```
+
+---
+
+## Nested / Grouped Queries
+
+Pass a closure to `where()` or `orWhere()` to create a parenthesised group:
+
+```php
+Query::where(fn ($q) => $q
+    ->where('name', Operator::EQ, 'Chris')
+    ->orWhere('name', Operator::EQ, 'Bob')
+)
+->where('verified', Operator::EQ, true)
+->compile();
+// "(name = 'Chris' OR name = 'Bob') AND verified = true"
+```
+
+Groups can be nested to any depth:
+
+```php
+Query::where(fn ($q) => $q
+    ->where('count', Operator::GTE, 10)
+    ->where('count', Operator::LTE, 100)
+    ->orWhere(fn ($sub) => $sub
+        ->where('name', Operator::EQ, 'Chris')
+        ->orWhereIsEmpty('name')
+        ->orWhereIsNull('email')
+    )
+)
+->orWhere('name', Operator::EQ, 'Bob')
+->compile();
+// "(count >= 10 AND count <= 100 OR (name = 'Chris' OR name IS EMPTY OR email IS NULL)) OR name = 'Bob'"
+```
+
+---
+
+## Supported Operators
+
+See the [Meilisearch filter expression reference](https://www.meilisearch.com/docs/learn/filtering_and_sorting/filter_expression_reference#filter-operators) for full documentation on each operator.
+
+| Enum case | Meilisearch syntax |
+|---|---|
+| `Operator::EQ` | `=` |
+| `Operator::NEQ` | `!=` |
+| `Operator::GT` | `>` |
+| `Operator::GTE` | `>=` |
+| `Operator::LT` | `<` |
+| `Operator::LTE` | `<=` |
+| `Operator::IN` | `IN` |
+| `Operator::NOT` | `NOT` |
+| `Operator::BETWEEN` | `TO` |
+| `Operator::EXISTS` | `EXISTS` |
+| `Operator::NULL` | `IS NULL` |
+| `Operator::EMPTY` | `IS EMPTY` |
+
+---
+
+## Advanced: Using `ScoutAdapter` Directly
+
+`forModel()` is a convenience wrapper around `ScoutAdapter`. If you need more control — for example, to swap in a custom compiler — you can instantiate `ScoutAdapter` directly:
+
+```php
+use Chr15k\MeilisearchAdvancedQuery\Adapters\ScoutAdapter;
+use Chr15k\MeilisearchAdvancedQuery\Facades\Query;
+use App\Models\Product;
+
+$adapter = ScoutAdapter::for(
+    Product::class,
+    Query::where('status', Operator::EQ, 'active'),
+);
+
+$results = $adapter->search('leather', sort: ['price:asc']);
+```
+
+`ScoutAdapter` validates at instantiation that the given class exists, is an Eloquent model, and uses the `Searchable` trait — throwing `InvalidArgumentException` if any check fails.
+
+---
+
+## Debugging
+
+Call `compile()` at any point in the chain to get the raw filter string without executing a search:
+
+```php
+Query::where(fn ($q) => $q
+    ->whereIn('role', ['admin', 'editor'])
+    ->orWhereIsEmpty('verified_at')
+)
+->orWhere('email', Operator::EQ, 'chris@example.com')
+->compile();
+
+// "(role IN ['admin', 'editor'] OR verified_at IS EMPTY) OR email = 'chris@example.com'"
+```
+
+---
+
+## Architecture
+
+The package is structured around four concerns:
+
+- **Nodes** — immutable, typed value objects representing a single filter clause (`ComparisonNode`, `InNode`, `NotInNode`, `BetweenNode`, `GroupNode`, `RawNode`)
+- **Compiler** — walks the node tree and produces a Meilisearch filter string (`MeilisearchCompiler`)
+- **Query builder** — fluent API that constructs the node tree (`MeilisearchAdvancedQuery`)
+- **Scout adapter** — bridges the compiled filter string to a Scout `Builder` (`ScoutAdapter`)
+
+The `Compiler` and `Query` contracts are independently extensible — you can implement your own compiler (for a different search engine's filter syntax) or your own query builder without touching the rest of the package.
+
+---
+
+## Running Tests
 
 ```bash
 composer test
 ```
+
+Individual checks:
+
+```bash
+composer test:types   # PHPStan static analysis
+composer test:lint    # Laravel Pint
+composer test:unit    # Pest (with coverage)
+```
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE) for details.
