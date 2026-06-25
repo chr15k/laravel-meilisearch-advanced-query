@@ -25,9 +25,9 @@ final class MeilisearchAdvancedQuery implements Query
 
     public function __construct(private readonly Compiler $compiler) {}
 
-    public static function query(): self
+    public static function query(): static
     {
-        return app(self::class);
+        return app(static::class);
     }
 
     public function forModel(string $modelClass): ScoutAdapter
@@ -51,9 +51,9 @@ final class MeilisearchAdvancedQuery implements Query
         Operator $operator = Operator::EQ,
         string|int|float|bool|null $value = null,
         BooleanOperator $boolean = BooleanOperator::And,
-    ): self {
+    ): static {
         if ($field instanceof Closure) {
-            $nested = self::newQuery();
+            $nested = static::newQuery();
             $field($nested);
             $this->nodeList[] = new GroupNode($nested->nodeList, $boolean);
 
@@ -69,44 +69,44 @@ final class MeilisearchAdvancedQuery implements Query
         string|Closure $field,
         Operator $operator = Operator::EQ,
         string|int|float|bool|null $value = null,
-    ): self {
+    ): static {
         return $this->where($field, $operator, $value, BooleanOperator::Or);
     }
 
-    public function whereIn(string $field, array $values): self
+    public function whereIn(string $field, array $values): static
     {
         $this->nodeList[] = new InNode($field, $values, BooleanOperator::And);
 
         return $this;
     }
 
-    public function orWhereIn(string $field, array $values): self
+    public function orWhereIn(string $field, array $values): static
     {
         $this->nodeList[] = new InNode($field, $values, BooleanOperator::Or);
 
         return $this;
     }
 
-    public function whereNotIn(string $field, array $values): self
+    public function whereNotIn(string $field, array $values): static
     {
         $this->nodeList[] = new NotInNode($field, $values, BooleanOperator::And);
 
         return $this;
     }
 
-    public function orWhereNotIn(string $field, array $values): self
+    public function orWhereNotIn(string $field, array $values): static
     {
         $this->nodeList[] = new NotInNode($field, $values, BooleanOperator::Or);
 
         return $this;
     }
 
-    public function whereNot(string $field, string|int|float|bool|null $value): self
+    public function whereNot(string $field, string|int|float|bool|null $value): static
     {
         return $this->where($field, Operator::NOT, $value);
     }
 
-    public function orWhereNot(string $field, string|int|float|bool|null $value): self
+    public function orWhereNot(string $field, string|int|float|bool|null $value): static
     {
         return $this->where($field, Operator::NOT, $value, BooleanOperator::Or);
     }
@@ -115,7 +115,7 @@ final class MeilisearchAdvancedQuery implements Query
         string $field,
         string|int|float|bool|null $from,
         string|int|float|bool|null $to
-    ): self {
+    ): static {
         $this->nodeList[] = new BetweenNode($field, $from, $to, BooleanOperator::And);
 
         return $this;
@@ -125,78 +125,78 @@ final class MeilisearchAdvancedQuery implements Query
         string $field,
         string|int|float|bool|null $from,
         string|int|float|bool|null $to
-    ): self {
+    ): static {
         $this->nodeList[] = new BetweenNode($field, $from, $to, BooleanOperator::Or);
 
         return $this;
     }
 
-    public function whereExists(string $field): self
+    public function whereExists(string $field): static
     {
         return $this->where($field, Operator::EXISTS);
     }
 
-    public function orWhereExists(string $field): self
+    public function orWhereExists(string $field): static
     {
         return $this->where($field, Operator::EXISTS, null, BooleanOperator::Or);
     }
 
-    public function whereIsNull(string $field): self
+    public function whereIsNull(string $field): static
     {
         return $this->where($field, Operator::NULL);
     }
 
-    public function orWhereIsNull(string $field): self
+    public function orWhereIsNull(string $field): static
     {
         return $this->where($field, Operator::NULL, null, BooleanOperator::Or);
     }
 
-    public function whereIsEmpty(string $field): self
+    public function whereIsEmpty(string $field): static
     {
         return $this->where($field, Operator::EMPTY);
     }
 
-    public function orWhereIsEmpty(string $field): self
+    public function orWhereIsEmpty(string $field): static
     {
         return $this->where($field, Operator::EMPTY, null, BooleanOperator::Or);
     }
 
-    public function whereRaw(string $query): self
+    public function whereRaw(string $query): static
     {
         $this->nodeList[] = new RawNode($query, BooleanOperator::And);
 
         return $this;
     }
 
-    public function orWhereRaw(string $query): self
+    public function orWhereRaw(string $query): static
     {
         $this->nodeList[] = new RawNode($query, BooleanOperator::Or);
 
         return $this;
     }
 
-    public function whereGeoRadius(float $lat, float $lng, float $distanceInMeters): self
+    public function whereGeoRadius(float $lat, float $lng, float $distanceInMeters): static
     {
         return $this->whereRaw(sprintf('_geoRadius(%s, %s, %s)', $lat, $lng, $distanceInMeters));
     }
 
-    public function orWhereGeoRadius(float $lat, float $lng, float $distanceInMeters): self
+    public function orWhereGeoRadius(float $lat, float $lng, float $distanceInMeters): static
     {
         return $this->orWhereRaw(sprintf('_geoRadius(%s, %s, %s)', $lat, $lng, $distanceInMeters));
     }
 
-    public function whereGeoBoundingBox(float $lat1, float $lng1, float $lat2, float $lng2): self
+    public function whereGeoBoundingBox(float $lat1, float $lng1, float $lat2, float $lng2): static
     {
         return $this->whereRaw(sprintf('_geoBoundingBox([%s, %s], [%s, %s])', $lat1, $lng1, $lat2, $lng2));
     }
 
-    public function orWhereGeoBoundingBox(float $lat1, float $lng1, float $lat2, float $lng2): self
+    public function orWhereGeoBoundingBox(float $lat1, float $lng1, float $lat2, float $lng2): static
     {
         return $this->orWhereRaw(sprintf('_geoBoundingBox([%s, %s], [%s, %s])', $lat1, $lng1, $lat2, $lng2));
     }
 
-    private function newQuery(): self
+    private function newQuery(): static
     {
-        return new self($this->compiler);
+        return new static($this->compiler);
     }
 }
