@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
+use Chr15k\MeilisearchAdvancedQuery\Adapters\ScoutAdapter;
 use Chr15k\MeilisearchAdvancedQuery\Enums\Operator;
 use Chr15k\MeilisearchAdvancedQuery\MeilisearchAdvancedQuery;
+use Chr15k\MeilisearchAdvancedQuery\Nodes\ComparisonNode;
+use Chr15k\MeilisearchAdvancedQuery\Tests\Models\User;
 
 // -------------------------------------------------------------------
 // Basic comparisons
@@ -454,4 +457,29 @@ describe('geo filters', function (): void {
                 ->compile()
         )->toBe("name = 'Chris' OR _geoBoundingBox([48.8566, 2.3522], [48.9, 2.4])");
     });
+});
+
+// -------------------------------------------------------------------
+// Nodes
+// -------------------------------------------------------------------
+it('can return nodes', function (): void {
+    $builder = MeilisearchAdvancedQuery::query()
+        ->where('name', Operator::EQ, 'Chris')
+        ->orWhere('name', Operator::EQ, 'Bob');
+
+    $nodes = $builder->nodes();
+
+    expect($nodes)->toHaveCount(2);
+    expect($nodes[0])->toBeInstanceOf(ComparisonNode::class);
+    expect($nodes[1])->toBeInstanceOf(ComparisonNode::class);
+});
+
+// -------------------------------------------------------------------
+// ScoutAdapter forModel()
+// -------------------------------------------------------------------
+it('can return a ScoutAdapter for a model', function (): void {
+    $builder = MeilisearchAdvancedQuery::query();
+    $scoutAdapter = $builder->forModel(User::class);
+
+    expect($scoutAdapter)->toBeInstanceOf(ScoutAdapter::class);
 });
