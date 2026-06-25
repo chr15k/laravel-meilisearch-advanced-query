@@ -14,9 +14,7 @@
 
 ------
 
-# Laravel Meilisearch Advanced Query
-
-A fluent query builder for Meilisearch filter expressions in Laravel. Handles compound conditions, nested groups, range queries, geo filters, and all Meilisearch-specific operators — without writing raw filter strings by hand.
+**Meilisearch Advanced Query** is a fluent query builder for Meilisearch filter expressions in Laravel. Handles compound conditions, nested groups, range queries, geo filters, and all Meilisearch-specific operators — without writing raw filter strings by hand.
 
 > [!WARNING]
 > v3 contains breaking changes. If you are upgrading from v2, see the [upgrade guide](UPGRADE.md).
@@ -365,3 +363,9 @@ composer test:types   # PHPStan static analysis
 composer test:lint    # Laravel Pint
 composer test:unit    # Pest (with coverage)
 ```
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE) for details.
