@@ -454,5 +454,4 @@ describe('geo filters', function (): void {
                 ->compile()
         )->toBe("name = 'Chris' OR _geoBoundingBox([48.8566, 2.3522], [48.9, 2.4])");
     });
-
 });
