@@ -8,8 +8,11 @@ use Chr15k\MeilisearchAdvancedQuery\Enums\BooleanOperator;
 use Chr15k\MeilisearchAdvancedQuery\Enums\Operator;
 use Closure;
 
-interface Query extends CompilesFilter
+interface Query
 {
+    /** @return list<Node> */
+    public function nodes(): array;
+
     public function compile(): string;
 
     public function where(

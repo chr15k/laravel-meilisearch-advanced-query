@@ -3,11 +3,8 @@
 declare(strict_types=1);
 
 use Chr15k\MeilisearchAdvancedQuery\Adapters\ScoutAdapter;
-use Chr15k\MeilisearchAdvancedQuery\Compilers\MeilisearchCompiler;
-use Chr15k\MeilisearchAdvancedQuery\Contracts\Compiler;
-use Chr15k\MeilisearchAdvancedQuery\Contracts\Node;
 use Chr15k\MeilisearchAdvancedQuery\Enums\Operator;
-use Chr15k\MeilisearchAdvancedQuery\MeilisearchQuery;
+use Chr15k\MeilisearchAdvancedQuery\MeilisearchAdvancedQuery;
 use Chr15k\MeilisearchAdvancedQuery\Tests\Models\NonSearchableUser;
 use Chr15k\MeilisearchAdvancedQuery\Tests\Models\User;
 use Laravel\Scout\Builder;
@@ -21,8 +18,7 @@ describe('ScoutAdapter::for()', function (): void {
     it('creates an instance for a valid searchable model', function (): void {
         $adapter = ScoutAdapter::for(
             User::class,
-            MeilisearchQuery::build(),
-            new MeilisearchCompiler,
+            MeilisearchAdvancedQuery::query(),
         );
 
         expect($adapter)->toBeInstanceOf(ScoutAdapter::class);
@@ -31,24 +27,21 @@ describe('ScoutAdapter::for()', function (): void {
     it('rejects a non-existent class', function (): void {
         ScoutAdapter::for(
             'App\Models\DoesNotExist',
-            MeilisearchQuery::build(),
-            new MeilisearchCompiler,
+            MeilisearchAdvancedQuery::query(),
         );
     })->throws(InvalidArgumentException::class);
 
     it('rejects a non-eloquent class', function (): void {
         ScoutAdapter::for(
             stdClass::class,
-            MeilisearchQuery::build(),
-            new MeilisearchCompiler,
+            MeilisearchAdvancedQuery::query(),
         );
     })->throws(InvalidArgumentException::class);
 
     it('rejects a non-searchable eloquent model', function (): void {
         ScoutAdapter::for(
             NonSearchableUser::class,
-            MeilisearchQuery::build(),
-            new MeilisearchCompiler,
+            MeilisearchAdvancedQuery::query(),
         );
     })->throws(InvalidArgumentException::class);
 
@@ -63,8 +56,7 @@ describe('ScoutAdapter::search()', function (): void {
     it('returns a Scout Builder instance', function (): void {
         $builder = ScoutAdapter::for(
             User::class,
-            MeilisearchQuery::build()->where('verified', Operator::EQ, true),
-            new MeilisearchCompiler,
+            MeilisearchAdvancedQuery::query()->where('verified', Operator::EQ, true),
         )->search();
 
         expect($builder)->toBeInstanceOf(Builder::class);
@@ -73,42 +65,10 @@ describe('ScoutAdapter::search()', function (): void {
     it('returns a Scout Builder with a search term', function (): void {
         $builder = ScoutAdapter::for(
             User::class,
-            MeilisearchQuery::build()->where('verified', Operator::EQ, true),
-            new MeilisearchCompiler,
+            MeilisearchAdvancedQuery::query()->where('verified', Operator::EQ, true),
         )->search('Chris');
 
         expect($builder)->toBeInstanceOf(Builder::class);
-    });
-
-});
-
-// -------------------------------------------------------------------
-// Compiler contract is respected
-// -------------------------------------------------------------------
-
-describe('ScoutAdapter compiler contract', function (): void {
-
-    it('accepts any Compiler implementation', function (): void {
-        $compiler = new class implements Compiler
-        {
-            public function compile(Node $node, bool $isFirst = false): string
-            {
-                return '';
-            }
-
-            public function compileAll(array $nodes): string
-            {
-                return '';
-            }
-        };
-
-        $adapter = ScoutAdapter::for(
-            User::class,
-            MeilisearchQuery::build()->where('name', Operator::EQ, 'Chris'),
-            $compiler,
-        );
-
-        expect($adapter)->toBeInstanceOf(ScoutAdapter::class);
     });
 
 });
@@ -120,11 +80,11 @@ describe('ScoutAdapter compiler contract', function (): void {
 describe('ScoutAdapter query contract', function (): void {
 
     it('accepts any CompilesFilter implementation', function (): void {
-        $query = MeilisearchQuery::build()
+        $query = MeilisearchAdvancedQuery::query()
             ->where('name', Operator::EQ, 'Chris')
             ->orWhere('name', Operator::EQ, 'Bob');
 
-        $adapter = ScoutAdapter::for(User::class, $query, new MeilisearchCompiler);
+        $adapter = ScoutAdapter::for(User::class, $query);
 
         expect($adapter)->toBeInstanceOf(ScoutAdapter::class);
     });
@@ -151,8 +111,7 @@ describe('ScoutAdapter::callback()', function (): void {
 
         $adapter = ScoutAdapter::for(
             User::class,
-            MeilisearchQuery::build()->where('verified', Operator::EQ, true),
-            new MeilisearchCompiler,
+            MeilisearchAdvancedQuery::query()->where('verified', Operator::EQ, true),
         );
 
         $callback = $adapter->callback('verified = true', []);
@@ -176,8 +135,7 @@ describe('ScoutAdapter::callback()', function (): void {
 
         $adapter = ScoutAdapter::for(
             User::class,
-            MeilisearchQuery::build()->where('verified', Operator::EQ, true),
-            new MeilisearchCompiler,
+            MeilisearchAdvancedQuery::query()->where('verified', Operator::EQ, true),
         );
 
         $callback = $adapter->callback('verified = true', ['name:asc']);
@@ -201,10 +159,9 @@ describe('ScoutAdapter::callback()', function (): void {
 
         $adapter = ScoutAdapter::for(
             User::class,
-            MeilisearchQuery::build()
+            MeilisearchAdvancedQuery::query()
                 ->where('verified', Operator::EQ, true)
                 ->whereIn('role', ['admin', 'editor']),
-            new MeilisearchCompiler,
         );
 
         $callback = $adapter->callback(
@@ -217,5 +174,4 @@ describe('ScoutAdapter::callback()', function (): void {
         expect($engine->options['filter'])->toBe("verified = true AND role IN ['admin', 'editor']")
             ->and($engine->options['sort'])->toBe(['name:asc', 'created_at:desc']);
     });
-
 });

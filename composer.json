@@ -48,6 +48,13 @@
             "php-http/discovery": true
         }
     },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Chr15k\\MeilisearchAdvancedQuery\\MeilisearchAdvancedQueryServiceProvider"
+            ]
+        }
+    },
     "scripts": {
         "refactor": "rector",
         "lint": "pint",

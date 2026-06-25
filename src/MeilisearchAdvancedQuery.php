@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Chr15k\MeilisearchAdvancedQuery;
 
-use Chr15k\MeilisearchAdvancedQuery\Compilers\MeilisearchCompiler;
+use Chr15k\MeilisearchAdvancedQuery\Adapters\ScoutAdapter;
+use Chr15k\MeilisearchAdvancedQuery\Contracts\Compiler;
 use Chr15k\MeilisearchAdvancedQuery\Contracts\Node;
 use Chr15k\MeilisearchAdvancedQuery\Contracts\Query;
 use Chr15k\MeilisearchAdvancedQuery\Enums\BooleanOperator;
@@ -17,14 +18,21 @@ use Chr15k\MeilisearchAdvancedQuery\Nodes\NotInNode;
 use Chr15k\MeilisearchAdvancedQuery\Nodes\RawNode;
 use Closure;
 
-final class MeilisearchQuery implements Query
+final class MeilisearchAdvancedQuery implements Query
 {
     /** @var list<Node> */
     private array $nodeList = [];
 
-    public static function build(): self
+    public function __construct(private readonly Compiler $compiler) {}
+
+    public static function query(): self
     {
-        return new self;
+        return app(self::class);
+    }
+
+    public function forModel(string $modelClass): ScoutAdapter
+    {
+        return ScoutAdapter::for($modelClass, $this);
     }
 
     /** @return list<Node> */
@@ -35,7 +43,7 @@ final class MeilisearchQuery implements Query
 
     public function compile(): string
     {
-        return (new MeilisearchCompiler)->compileAll($this->nodeList);
+        return $this->compiler->compileAll($this->nodeList);
     }
 
     public function where(
@@ -45,7 +53,7 @@ final class MeilisearchQuery implements Query
         BooleanOperator $boolean = BooleanOperator::And,
     ): self {
         if ($field instanceof Closure) {
-            $nested = new self;
+            $nested = self::newQuery();
             $field($nested);
             $this->nodeList[] = new GroupNode($nested->nodeList, $boolean);
 
@@ -185,5 +193,10 @@ final class MeilisearchQuery implements Query
     public function orWhereGeoBoundingBox(float $lat1, float $lng1, float $lat2, float $lng2): self
     {
         return $this->orWhereRaw(sprintf('_geoBoundingBox([%s, %s], [%s, %s])', $lat1, $lng1, $lat2, $lng2));
+    }
+
+    private function newQuery(): self
+    {
+        return new self($this->compiler);
     }
 }

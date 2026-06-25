@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Chr15k\MeilisearchAdvancedQuery\Adapters;
 
-use Chr15k\MeilisearchAdvancedQuery\Contracts\Compiler;
-use Chr15k\MeilisearchAdvancedQuery\Contracts\CompilesFilter;
+use Chr15k\MeilisearchAdvancedQuery\Contracts\Query;
 use Chr15k\MeilisearchAdvancedQuery\Contracts\SearchableModel;
 use Chr15k\MeilisearchAdvancedQuery\Contracts\SearchAdapter;
 use Closure;
@@ -21,11 +20,10 @@ final readonly class ScoutAdapter implements SearchAdapter
      */
     public function __construct(
         private Model $model,
-        private CompilesFilter $query,
-        private Compiler $compiler,
+        private Query $query,
     ) {}
 
-    public static function for(string $modelClass, CompilesFilter $query, Compiler $compiler): self
+    public static function for(string $modelClass, Query $query): self
     {
         if (! class_exists($modelClass)) {
             throw new InvalidArgumentException(sprintf('The class %s does not exist.', $modelClass));
@@ -42,7 +40,7 @@ final readonly class ScoutAdapter implements SearchAdapter
         }
 
         /** @var SearchableModel&Model $model */
-        return new self($model, $query, $compiler);
+        return new self($model, $query);
     }
 
     /**
@@ -51,7 +49,7 @@ final readonly class ScoutAdapter implements SearchAdapter
      */
     public function search(string $term = '', array $sort = []): Builder
     {
-        $filter = $this->compiler->compileAll($this->query->nodes());
+        $filter = $this->query->compile();
 
         /** @var Builder<Model> $builder */
         $builder = $this->model::search($term, $this->callback($filter, $sort));

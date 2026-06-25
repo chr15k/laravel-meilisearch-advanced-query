@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Chr15k\MeilisearchAdvancedQuery\Enums\Operator;
-use Chr15k\MeilisearchAdvancedQuery\MeilisearchQuery;
+use Chr15k\MeilisearchAdvancedQuery\MeilisearchAdvancedQuery;
 
 // -------------------------------------------------------------------
 // Basic comparisons
@@ -13,43 +13,43 @@ describe('basic where', function (): void {
 
     it('compiles a boolean true value', function (): void {
         expect(
-            MeilisearchQuery::build()->where('verified', Operator::EQ, true)->compile()
+            MeilisearchAdvancedQuery::query()->where('verified', Operator::EQ, true)->compile()
         )->toBe('verified = true');
     });
 
     it('compiles a string value', function (): void {
         expect(
-            MeilisearchQuery::build()->where('name', Operator::EQ, 'Chris')->compile()
+            MeilisearchAdvancedQuery::query()->where('name', Operator::EQ, 'Chris')->compile()
         )->toBe("name = 'Chris'");
     });
 
     it('compiles an integer value', function (): void {
         expect(
-            MeilisearchQuery::build()->where('count', Operator::GTE, 10)->compile()
+            MeilisearchAdvancedQuery::query()->where('count', Operator::GTE, 10)->compile()
         )->toBe('count >= 10');
     });
 
     it('compiles greater than or equal', function (): void {
         expect(
-            MeilisearchQuery::build()->where('count', Operator::GTE, 10)->compile()
+            MeilisearchAdvancedQuery::query()->where('count', Operator::GTE, 10)->compile()
         )->toBe('count >= 10');
     });
 
     it('compiles less than or equal', function (): void {
         expect(
-            MeilisearchQuery::build()->where('count', Operator::LTE, 10)->compile()
+            MeilisearchAdvancedQuery::query()->where('count', Operator::LTE, 10)->compile()
         )->toBe('count <= 10');
     });
 
     it('compiles not equal', function (): void {
         expect(
-            MeilisearchQuery::build()->where('email', Operator::NEQ, 'chris@example.com')->compile()
+            MeilisearchAdvancedQuery::query()->where('email', Operator::NEQ, 'chris@example.com')->compile()
         )->toBe("email != 'chris@example.com'");
     });
 
     it('compiles NOT operator', function (): void {
         expect(
-            MeilisearchQuery::build()->whereNot('name', 'Chris')->compile()
+            MeilisearchAdvancedQuery::query()->whereNot('name', 'Chris')->compile()
         )->toBe("NOT name = 'Chris'");
     });
 
@@ -63,19 +63,19 @@ describe('whereIn / whereNotIn', function (): void {
 
     it('compiles whereIn', function (): void {
         expect(
-            MeilisearchQuery::build()->whereIn('name', ['Chris', 'Bob'])->compile()
+            MeilisearchAdvancedQuery::query()->whereIn('name', ['Chris', 'Bob'])->compile()
         )->toBe("name IN ['Chris', 'Bob']");
     });
 
     it('compiles orWhereIn as first node without boolean prefix', function (): void {
         expect(
-            MeilisearchQuery::build()->orWhereIn('name', ['Chris', 'Bob'])->compile()
+            MeilisearchAdvancedQuery::query()->orWhereIn('name', ['Chris', 'Bob'])->compile()
         )->toBe("name IN ['Chris', 'Bob']");
     });
 
     it('compiles orWhereIn appended to a comparison node', function (): void {
         expect(
-            MeilisearchQuery::build()
+            MeilisearchAdvancedQuery::query()
                 ->where('verified', Operator::EQ, true)
                 ->orWhereIn('name', ['Chris', 'Bob'])
                 ->compile()
@@ -84,19 +84,19 @@ describe('whereIn / whereNotIn', function (): void {
 
     it('compiles whereNotIn', function (): void {
         expect(
-            MeilisearchQuery::build()->whereNotIn('name', ['Chris', 'Bob'])->compile()
+            MeilisearchAdvancedQuery::query()->whereNotIn('name', ['Chris', 'Bob'])->compile()
         )->toBe("name NOT IN ['Chris', 'Bob']");
     });
 
     it('compiles orWhereNotIn as first node without boolean prefix', function (): void {
         expect(
-            MeilisearchQuery::build()->orWhereNotIn('name', ['Chris', 'Bob'])->compile()
+            MeilisearchAdvancedQuery::query()->orWhereNotIn('name', ['Chris', 'Bob'])->compile()
         )->toBe("name NOT IN ['Chris', 'Bob']");
     });
 
     it('compiles orWhereNotIn appended to a comparison node', function (): void {
         expect(
-            MeilisearchQuery::build()
+            MeilisearchAdvancedQuery::query()
                 ->where('verified', Operator::EQ, true)
                 ->orWhereNotIn('name', ['Chris', 'Bob'])
                 ->compile()
@@ -105,7 +105,7 @@ describe('whereIn / whereNotIn', function (): void {
 
     it('compiles whereIn inside a group', function (): void {
         expect(
-            MeilisearchQuery::build()
+            MeilisearchAdvancedQuery::query()
                 ->where(fn ($q) => $q->whereIn('name', ['Chris', 'Bob']))
                 ->orWhere('email', Operator::EQ, 'chris@example.com')
                 ->compile()
@@ -114,7 +114,7 @@ describe('whereIn / whereNotIn', function (): void {
 
     it('compiles whereNotIn inside a group', function (): void {
         expect(
-            MeilisearchQuery::build()
+            MeilisearchAdvancedQuery::query()
                 ->where(fn ($q) => $q->whereNotIn('name', ['Chris', 'Bob']))
                 ->orWhere('email', Operator::EQ, 'chris@example.com')
                 ->compile()
@@ -123,7 +123,7 @@ describe('whereIn / whereNotIn', function (): void {
 
     it('compiles mixed whereIn and whereNotIn', function (): void {
         expect(
-            MeilisearchQuery::build()
+            MeilisearchAdvancedQuery::query()
                 ->whereIn('role', ['admin', 'editor'])
                 ->whereNotIn('status', ['banned', 'suspended'])
                 ->compile()
@@ -139,27 +139,27 @@ describe('whereIn / whereNotIn', function (): void {
 describe('unary operators', function (): void {
 
     it('compiles EXISTS', function (): void {
-        expect(MeilisearchQuery::build()->whereExists('name')->compile())->toBe('name EXISTS');
+        expect(MeilisearchAdvancedQuery::query()->whereExists('name')->compile())->toBe('name EXISTS');
     });
 
     it('compiles IS NULL', function (): void {
-        expect(MeilisearchQuery::build()->whereIsNull('name')->compile())->toBe('name IS NULL');
+        expect(MeilisearchAdvancedQuery::query()->whereIsNull('name')->compile())->toBe('name IS NULL');
     });
 
     it('compiles IS EMPTY', function (): void {
-        expect(MeilisearchQuery::build()->whereIsEmpty('name')->compile())->toBe('name IS EMPTY');
+        expect(MeilisearchAdvancedQuery::query()->whereIsEmpty('name')->compile())->toBe('name IS EMPTY');
     });
 
     it('compiles orWhereExists as first node without boolean prefix', function (): void {
-        expect(MeilisearchQuery::build()->orWhereExists('name')->compile())->toBe('name EXISTS');
+        expect(MeilisearchAdvancedQuery::query()->orWhereExists('name')->compile())->toBe('name EXISTS');
     });
 
     it('compiles orWhereIsNull as first node without boolean prefix', function (): void {
-        expect(MeilisearchQuery::build()->orWhereIsNull('name')->compile())->toBe('name IS NULL');
+        expect(MeilisearchAdvancedQuery::query()->orWhereIsNull('name')->compile())->toBe('name IS NULL');
     });
 
     it('compiles orWhereIsEmpty as first node without boolean prefix', function (): void {
-        expect(MeilisearchQuery::build()->orWhereIsEmpty('name')->compile())->toBe('name IS EMPTY');
+        expect(MeilisearchAdvancedQuery::query()->orWhereIsEmpty('name')->compile())->toBe('name IS EMPTY');
     });
 
 });
@@ -172,13 +172,13 @@ describe('whereBetween', function (): void {
 
     it('compiles whereBetween', function (): void {
         expect(
-            MeilisearchQuery::build()->whereBetween('count', 1, 10)->compile()
+            MeilisearchAdvancedQuery::query()->whereBetween('count', 1, 10)->compile()
         )->toBe('count 1 TO 10');
     });
 
     it('compiles orWhereBetween as first node without boolean prefix', function (): void {
         expect(
-            MeilisearchQuery::build()->orWhereBetween('count', 1, 10)->compile()
+            MeilisearchAdvancedQuery::query()->orWhereBetween('count', 1, 10)->compile()
         )->toBe('count 1 TO 10');
     });
 
@@ -191,7 +191,7 @@ describe('whereBetween', function (): void {
 describe('boolean chaining', function (): void {
 
     it('compiles AND chain', function (): void {
-        $compiled = MeilisearchQuery::build()
+        $compiled = MeilisearchAdvancedQuery::query()
             ->where('name', Operator::EQ, 'Chris')
             ->where('verified', Operator::EQ, true)
             ->compile();
@@ -200,7 +200,7 @@ describe('boolean chaining', function (): void {
     });
 
     it('compiles OR chain', function (): void {
-        $compiled = MeilisearchQuery::build()
+        $compiled = MeilisearchAdvancedQuery::query()
             ->where('name', Operator::EQ, 'Chris')
             ->orWhere('name', Operator::EQ, 'Bob')
             ->compile();
@@ -214,19 +214,19 @@ describe('whereNot / orWhereNot', function (): void {
 
     it('compiles whereNot', function (): void {
         expect(
-            MeilisearchQuery::build()->whereNot('name', 'Chris')->compile()
+            MeilisearchAdvancedQuery::query()->whereNot('name', 'Chris')->compile()
         )->toBe("NOT name = 'Chris'");
     });
 
     it('compiles orWhereNot as first node without boolean prefix', function (): void {
         expect(
-            MeilisearchQuery::build()->orWhereNot('name', 'Chris')->compile()
+            MeilisearchAdvancedQuery::query()->orWhereNot('name', 'Chris')->compile()
         )->toBe("NOT name = 'Chris'");
     });
 
     it('compiles orWhereNot appended to a comparison node', function (): void {
         expect(
-            MeilisearchQuery::build()
+            MeilisearchAdvancedQuery::query()
                 ->where('verified', Operator::EQ, true)
                 ->orWhereNot('name', 'Chris')
                 ->compile()
@@ -235,7 +235,7 @@ describe('whereNot / orWhereNot', function (): void {
 
     it('compiles whereNot appended to a comparison node', function (): void {
         expect(
-            MeilisearchQuery::build()
+            MeilisearchAdvancedQuery::query()
                 ->where('verified', Operator::EQ, true)
                 ->whereNot('name', 'Chris')
                 ->compile()
@@ -244,7 +244,7 @@ describe('whereNot / orWhereNot', function (): void {
 
     it('compiles orWhereNot inside a group', function (): void {
         expect(
-            MeilisearchQuery::build()
+            MeilisearchAdvancedQuery::query()
                 ->where(fn ($q) => $q
                     ->where('verified', Operator::EQ, true)
                     ->orWhereNot('name', 'Chris')
@@ -255,7 +255,7 @@ describe('whereNot / orWhereNot', function (): void {
 
     it('compiles multiple orWhereNot', function (): void {
         expect(
-            MeilisearchQuery::build()
+            MeilisearchAdvancedQuery::query()
                 ->whereNot('name', 'Chris')
                 ->orWhereNot('name', 'Bob')
                 ->orWhereNot('name', 'Erin')
@@ -265,7 +265,7 @@ describe('whereNot / orWhereNot', function (): void {
 
     it('compiles orWhereNot with integer value', function (): void {
         expect(
-            MeilisearchQuery::build()
+            MeilisearchAdvancedQuery::query()
                 ->where('count', Operator::GTE, 10)
                 ->orWhereNot('count', 0)
                 ->compile()
@@ -281,7 +281,7 @@ describe('whereNot / orWhereNot', function (): void {
 describe('nested queries', function (): void {
 
     it('compiles a basic nested query', function (): void {
-        $compiled = MeilisearchQuery::build()
+        $compiled = MeilisearchAdvancedQuery::query()
             ->where(fn ($q) => $q
                 ->where('name', Operator::EQ, 'Chris')
                 ->orWhere('name', Operator::EQ, 'Bob')
@@ -293,7 +293,7 @@ describe('nested queries', function (): void {
     });
 
     it('compiles whereIn inside a nested query', function (): void {
-        $compiled = MeilisearchQuery::build()
+        $compiled = MeilisearchAdvancedQuery::query()
             ->where(fn ($q) => $q->whereIn('name', ['Chris', 'Bob']))
             ->orWhere('email', Operator::EQ, 'chris@example.com')
             ->compile();
@@ -302,7 +302,7 @@ describe('nested queries', function (): void {
     });
 
     it('compiles whereNot inside a nested query', function (): void {
-        $compiled = MeilisearchQuery::build()
+        $compiled = MeilisearchAdvancedQuery::query()
             ->where(fn ($q) => $q
                 ->whereNot('name', 'Chris')
                 ->where('email', Operator::EQ, 'chris@example.com')
@@ -314,7 +314,7 @@ describe('nested queries', function (): void {
     });
 
     it('compiles multiple nested operators', function (): void {
-        $compiled = MeilisearchQuery::build()
+        $compiled = MeilisearchAdvancedQuery::query()
             ->where(fn ($q) => $q
                 ->where('count', Operator::GTE, 10)
                 ->where('count', Operator::LTE, 100)
@@ -333,7 +333,7 @@ describe('nested queries', function (): void {
     });
 
     it('compiles deeply nested queries', function (): void {
-        $compiled = MeilisearchQuery::build()
+        $compiled = MeilisearchAdvancedQuery::query()
             ->where('name', Operator::EQ, 'Chris')
             ->where(fn ($q) => $q
                 ->where('name', Operator::EQ, 'Bob')
@@ -352,14 +352,14 @@ describe('nested queries', function (): void {
         );
     });
 
-    it('returns MeilisearchQuery instance before compile', function (): void {
-        $builder = MeilisearchQuery::build()
+    it('returns MeilisearchAdvancedQuery instance before compile', function (): void {
+        $builder = MeilisearchAdvancedQuery::query()
             ->where(fn ($q) => $q
                 ->where('name', Operator::EQ, 'Chris')
                 ->orWhere('name', Operator::EQ, 'Bob')
             );
 
-        expect($builder)->toBeInstanceOf(MeilisearchQuery::class);
+        expect($builder)->toBeInstanceOf(MeilisearchAdvancedQuery::class);
     });
 
 });
@@ -372,13 +372,13 @@ describe('raw queries', function (): void {
 
     it('compiles a single raw query', function (): void {
         expect(
-            MeilisearchQuery::build()->whereRaw("name = 'Chris'")->compile()
+            MeilisearchAdvancedQuery::query()->whereRaw("name = 'Chris'")->compile()
         )->toBe("name = 'Chris'");
     });
 
     it('compiles raw AND chain', function (): void {
         expect(
-            MeilisearchQuery::build()
+            MeilisearchAdvancedQuery::query()
                 ->whereRaw("name = 'Chris'")
                 ->whereRaw("name = 'Bob'")
                 ->compile()
@@ -387,7 +387,7 @@ describe('raw queries', function (): void {
 
     it('compiles raw OR chain', function (): void {
         expect(
-            MeilisearchQuery::build()
+            MeilisearchAdvancedQuery::query()
                 ->whereRaw("name = 'Chris'")
                 ->orWhereRaw("name = 'Bob'")
                 ->compile()
@@ -396,14 +396,14 @@ describe('raw queries', function (): void {
 
     it('compiles a single raw query with inline OR', function (): void {
         expect(
-            MeilisearchQuery::build()
+            MeilisearchAdvancedQuery::query()
                 ->whereRaw("name = 'Chris' OR name = 'Bob'")
                 ->compile()
         )->toBe("name = 'Chris' OR name = 'Bob'");
     });
 
     it('compiles mixed raw and nested query', function (): void {
-        $compiled = MeilisearchQuery::build()
+        $compiled = MeilisearchAdvancedQuery::query()
             ->where('email', Operator::EQ, 'chris@example.com')
             ->where(fn ($q) => $q
                 ->whereRaw("name = 'Chris'")
@@ -427,13 +427,13 @@ describe('geo filters', function (): void {
 
     it('compiles whereGeoRadius', function (): void {
         expect(
-            MeilisearchQuery::build()->whereGeoRadius(48.8566, 2.3522, 1000)->compile()
+            MeilisearchAdvancedQuery::query()->whereGeoRadius(48.8566, 2.3522, 1000)->compile()
         )->toBe('_geoRadius(48.8566, 2.3522, 1000)');
     });
 
     it('compiles orWhereGeoRadius', function (): void {
         expect(
-            MeilisearchQuery::build()
+            MeilisearchAdvancedQuery::query()
                 ->where('name', Operator::EQ, 'Chris')
                 ->orWhereGeoRadius(48.8566, 2.3522, 1000)
                 ->compile()
@@ -442,13 +442,13 @@ describe('geo filters', function (): void {
 
     it('compiles whereGeoBoundingBox', function (): void {
         expect(
-            MeilisearchQuery::build()->whereGeoBoundingBox(48.8566, 2.3522, 48.9, 2.4)->compile()
+            MeilisearchAdvancedQuery::query()->whereGeoBoundingBox(48.8566, 2.3522, 48.9, 2.4)->compile()
         )->toBe('_geoBoundingBox([48.8566, 2.3522], [48.9, 2.4])');
     });
 
     it('compiles orWhereGeoBoundingBox', function (): void {
         expect(
-            MeilisearchQuery::build()
+            MeilisearchAdvancedQuery::query()
                 ->where('name', Operator::EQ, 'Chris')
                 ->orWhereGeoBoundingBox(48.8566, 2.3522, 48.9, 2.4)
                 ->compile()

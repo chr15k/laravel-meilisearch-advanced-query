@@ -26,9 +26,9 @@ For context, [go here](https://laravel.com/docs/11.x/scout#customizing-engine-se
 ```php
 <?php
 use App\Models\User;
-use Chr15k\MeilisearchAdvancedQuery\MeilisearchQuery;
+use Chr15k\MeilisearchAdvancedQuery\MeilisearchAdvancedQuery;
 
-$builder = MeilisearchQuery::for(User::class)
+$builder = MeilisearchAdvancedQuery::for(User::class)
     ->where('name', 'Chris')
     ->whereIn('email', ['chris@example.com', 'bob@example.com'])
     ->orWhere(fn ($query) => $query
@@ -46,7 +46,7 @@ $results = $builder->paginate();
 #### # where(column, operator(optional), value(optional), boolean(optional))
 
 ```php
-MeilisearchQuery::for(User::class)->where('name', 'Chris');
+MeilisearchAdvancedQuery::for(User::class)->where('name', 'Chris');
 
 // "name = 'Chris'"
 ```
@@ -54,11 +54,11 @@ MeilisearchQuery::for(User::class)->where('name', 'Chris');
 #### # orWhere(column, operator(optional), value(optional))
 
 ```php
-MeilisearchQuery::for(User::class)->orWhere('name', 'Chris')
+MeilisearchAdvancedQuery::for(User::class)->orWhere('name', 'Chris')
 
 // "name = 'Chris'"
 
-MeilisearchQuery::for(User::class)
+MeilisearchAdvancedQuery::for(User::class)
     ->where('name', 'Bob')
     ->orWhere('name', 'Chris')
 
@@ -68,7 +68,7 @@ MeilisearchQuery::for(User::class)
 #### # whereIn(column, value(optional))
 
 ```php
-MeilisearchQuery::for(User::class)
+MeilisearchAdvancedQuery::for(User::class)
     ->whereIn('name', ['Chris', 'Bob']);
 
 // "name IN ['Chris','Bob']"
@@ -77,12 +77,12 @@ MeilisearchQuery::for(User::class)
 #### # orWhereIn(column, value(optional))
 
 ```php
-MeilisearchQuery::for(User::class)
+MeilisearchAdvancedQuery::for(User::class)
     ->orWhereIn('name', ['Chris', 'Bob']);
 
 // "name IN ['Chris','Bob']"
 
-MeilisearchQuery::for(User::class)
+MeilisearchAdvancedQuery::for(User::class)
     ->where('email', 'chris@example.com')
     ->orWhereIn('name', ['Chris', 'Bob']) ;
 
@@ -92,7 +92,7 @@ MeilisearchQuery::for(User::class)
 #### # whereNotIn(column, value(optional))
 
 ```php
-MeilisearchQuery::for(User::class)
+MeilisearchAdvancedQuery::for(User::class)
     ->whereNotIn('name', ['Chris', 'Bob']);
 
 // "name NOT IN ['Chris','Bob']"
@@ -101,7 +101,7 @@ MeilisearchQuery::for(User::class)
 #### # orWhereNotIn(column, value(optional))
 
 ```php
-MeilisearchQuery::for(User::class)
+MeilisearchAdvancedQuery::for(User::class)
     ->where('email', 'chris@example.com')
     ->orWhereNotIn('name', ['Chris', 'Bob']);
 
@@ -111,7 +111,7 @@ MeilisearchQuery::for(User::class)
 #### # whereNot(column, value(optional))
 
 ```php
-MeilisearchQuery::for(User::class)
+MeilisearchAdvancedQuery::for(User::class)
     ->whereNot('name', 'Chris');
 
 // "NOT name 'Chris'"
@@ -120,7 +120,7 @@ MeilisearchQuery::for(User::class)
 #### # orWhereNot(column, value(optional))
 
 ```php
-MeilisearchQuery::for(User::class)
+MeilisearchAdvancedQuery::for(User::class)
     ->where('email', 'chris@example.com')
     ->orWhereNot('name', 'Chris');
 
@@ -130,7 +130,7 @@ MeilisearchQuery::for(User::class)
 #### # whereIsEmpty(column)
 
 ```php
-MeilisearchQuery::for(User::class)->whereIsEmpty('name');
+MeilisearchAdvancedQuery::for(User::class)->whereIsEmpty('name');
 
 // "name IS EMPTY"
 ```
@@ -138,7 +138,7 @@ MeilisearchQuery::for(User::class)->whereIsEmpty('name');
 #### # orWhereIsEmpty(column)
 
 ```php
-MeilisearchQuery::for(User::class)
+MeilisearchAdvancedQuery::for(User::class)
     ->whereNot('name', 'Chris')
     ->orWhereIsEmpty('name');
 
@@ -148,7 +148,7 @@ MeilisearchQuery::for(User::class)
 #### # whereTo(column, from, to)
 
 ```php
-MeilisearchQuery::for(User::class)->whereTo('count', 1, 10);
+MeilisearchAdvancedQuery::for(User::class)->whereTo('count', 1, 10);
 
 // "count 1 TO 10"
 ```
@@ -156,7 +156,7 @@ MeilisearchQuery::for(User::class)->whereTo('count', 1, 10);
 #### # orWhereTo(column, from, to)
 
 ```php
-MeilisearchQuery::for(User::class)
+MeilisearchAdvancedQuery::for(User::class)
     ->where('email', 'chris@example.com')
     ->orWhereTo('count', 1, 10);
 
@@ -166,7 +166,7 @@ MeilisearchQuery::for(User::class)
 #### # whereRaw(rawQuery)
 
 ```php
-MeilisearchQuery::for(User::class)
+MeilisearchAdvancedQuery::for(User::class)
     ->whereRaw("name = 'Chris' OR name = 'Bob'")
     ->compile();
 
@@ -176,7 +176,7 @@ MeilisearchQuery::for(User::class)
 #### # orWhereRaw(rawQuery)
 
 ```php
-MeilisearchQuery::for(User::class)
+MeilisearchAdvancedQuery::for(User::class)
     ->whereRaw("name = 'Chris'")
     ->orWhereRaw("name = 'Bob'")
     ->compile();
@@ -186,21 +186,21 @@ MeilisearchQuery::for(User::class)
 
 #### # whereGeoRadius([lat, lng], radius)
 ```php
-MeilisearchQuery::for(Hotel::class)
+MeilisearchAdvancedQuery::for(Hotel::class)
   ->where('active', true)
   ->whereGeoRadius([45.810741058569405, 9.086351912290523], 20000)
   ->search();
-  
+
 // "active = true AND _geoRadius(45.810741058569405, 9.086351912290523, 20000)"
 ```
 
 #### # whereGeoBoundingBox([lat, lng], [lat, lng])
 ```php
-MeilisearchQuery::for(Hotel::class)
+MeilisearchAdvancedQuery::for(Hotel::class)
   ->where('active', true)
   ->whereGeoBoundingBox([45.810741058569405, 9.086351912290523], [45.810741058569405, 9.086351912290523])
   ->search();
-  
+
 // "active = true AND _geoBoundingBox([45.810741058569405, 9.086351912290523], [45.810741058569405, 9.086351912290523])"
 ```
 
@@ -217,7 +217,7 @@ MeilisearchQuery::for(Hotel::class)
 ### Nested / grouped queries
 
 ```php
-MeilisearchQuery::for(User::class)
+MeilisearchAdvancedQuery::for(User::class)
     ->where(fn ($query) => $query
         ->whereNot('name', 'Chris')
         ->orWhereIsEmpty('name')
@@ -234,7 +234,7 @@ In addition to the above methods, you can also call sort on the builder instance
 #### Single column sort:
 
 ```php
-MeilisearchQuery::for(User::class)
+MeilisearchAdvancedQuery::for(User::class)
     ->where('name', 'Chris')
     ->orWhere('name', 'Bob')
     ->sort('name:desc');
@@ -243,7 +243,7 @@ MeilisearchQuery::for(User::class)
 #### Multiple column sort:
 
 ```php
-MeilisearchQuery::for(User::class)
+MeilisearchAdvancedQuery::for(User::class)
     ->where('name', 'Chris')
     ->orWhere('name', 'Bob')
     ->sort(['name:desc', 'email:asc']);
@@ -262,15 +262,15 @@ Docs: [Meilisearch operators](https://www.meilisearch.com/docs/learn/filtering_a
 Alternatively to the methods above, any of these operators can be called on `where()` or `orWhere()` methods, example:
 
 ```php
-MeilisearchQuery::for(User::class)->where('name', 'NOT', 'Chris'); // "NOT name 'Chris'"
-MeilisearchQuery::for(User::class)->where('count', 'TO', [1, 10]); // "count 1 TO 10"
-MeilisearchQuery::for(User::class)->where('name', 'IS EMPTY'); // "name IS EMPTY"
+MeilisearchAdvancedQuery::for(User::class)->where('name', 'NOT', 'Chris'); // "NOT name 'Chris'"
+MeilisearchAdvancedQuery::for(User::class)->where('count', 'TO', [1, 10]); // "count 1 TO 10"
+MeilisearchAdvancedQuery::for(User::class)->where('name', 'IS EMPTY'); // "name IS EMPTY"
 ```
 
 Calling without operator will default to equals (same behaviour as Eloquent):
 
 ```php
-MeilisearchQuery::for(User::class)->where('name', 'Chris'); // "name = 'Chris'"
+MeilisearchAdvancedQuery::for(User::class)->where('name', 'Chris'); // "name = 'Chris'"
 ```
 
 ## Debugging / helpers
@@ -278,7 +278,7 @@ MeilisearchQuery::for(User::class)->where('name', 'Chris'); // "name = 'Chris'"
 To get the raw query string from the builder, call `compile()` instead of `search()`
 
 ```php
-MeilisearchQuery::for(User::class)
+MeilisearchAdvancedQuery::for(User::class)
     ->where(fn ($query) => $query
         ->whereIn('name', ['Chris', 'Bob'])
         ->orWhereIsEmpty('verified_at')
@@ -292,13 +292,13 @@ MeilisearchQuery::for(User::class)
 To inspect the current builder instance properties:
 
 ```php
-MeilisearchQuery::for(User::class)->where('name', 'Chris')->inspect();
+MeilisearchAdvancedQuery::for(User::class)->where('name', 'Chris')->inspect();
 ```
 
 Or use the `dump` helper:
 
 ```php
-MeilisearchQuery::for(User::class)->where('name', 'Chris')->dump();
+MeilisearchAdvancedQuery::for(User::class)->where('name', 'Chris')->dump();
 ```
 
 ## Tests

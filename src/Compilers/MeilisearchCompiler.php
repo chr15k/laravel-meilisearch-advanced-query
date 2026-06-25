@@ -14,7 +14,7 @@ use Chr15k\MeilisearchAdvancedQuery\Nodes\InNode;
 use Chr15k\MeilisearchAdvancedQuery\Nodes\NotInNode;
 use Chr15k\MeilisearchAdvancedQuery\Nodes\RawNode;
 
-final class MeilisearchCompiler implements Compiler
+final readonly class MeilisearchCompiler implements Compiler
 {
     public function compile(Node $node, bool $isFirst = false): string
     {
@@ -32,12 +32,22 @@ final class MeilisearchCompiler implements Compiler
     /**
      * @param  list<Node>  $nodes
      */
-    public function compileAll(array $nodes): string
+    public function compileAll(iterable $nodes): string
     {
-        return collect($nodes)
-            ->map(fn (Node $node, int $index): string => $this->compile($node, isFirst: $index === 0))
-            ->filter()
-            ->implode(' ');
+        $result = [];
+
+        foreach ($nodes as $index => $node) {
+            $result[] = $this->compile($node, $index === 0);
+        }
+
+        return implode(' ', $result);
+    }
+
+    private function group(GroupNode $node, bool $isFirst = false): string
+    {
+        $inner = $this->compileAll($node->children);
+
+        return $this->prefix(sprintf('(%s)', $inner), $node->boolean, $isFirst);
     }
 
     private function in(InNode $node, bool $isFirst = false): string
@@ -98,16 +108,6 @@ final class MeilisearchCompiler implements Compiler
         return $this->prefix($expr, $node->boolean, $isFirst);
     }
 
-    private function group(GroupNode $node, bool $isFirst = false): string
-    {
-        $inner = collect($node->children)
-            ->map(fn (Node $child, int $index): string => $this->compile($child, isFirst: $index === 0))
-            ->filter()
-            ->implode(' ');
-
-        return $this->prefix(sprintf('(%s)', $inner), $node->boolean, $isFirst);
-    }
-
     private function escape(string|int|float|bool|null $value): string
     {
         return match (true) {
@@ -115,12 +115,15 @@ final class MeilisearchCompiler implements Compiler
             is_int($value),
             is_float($value) => (string) $value,
             is_null($value)  => 'NULL',
-            default          => sprintf("'%s'", $value),
+            default          => sprintf(
+                "'%s'",
+                str_replace("'", "\\'", $value)
+            ),
         };
     }
 
     /**
-     * @param  list<string>  $values
+     * @param  list<string|int|float|bool|null>  $values
      */
     private function escapeArray(array $values): string
     {

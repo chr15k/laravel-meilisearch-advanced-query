@@ -2,6 +2,6 @@
 
 declare(strict_types=1);
 
-use Orchestra\Testbench\TestCase;
+use Chr15k\MeilisearchAdvancedQuery\Tests\TestCase;
 
-uses(TestCase::class)->in('Unit', 'Integration');
+pest()->extend(TestCase::class)->in('Unit', 'Integration');
