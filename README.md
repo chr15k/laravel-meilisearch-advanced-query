@@ -14,10 +14,12 @@
 
 ------
 
-
 # Laravel Meilisearch Advanced Query
 
 A fluent query builder for Meilisearch filter expressions in Laravel. Handles compound conditions, nested groups, range queries, geo filters, and all Meilisearch-specific operators — without writing raw filter strings by hand.
+
+> [!WARNING]
+> v3 contains breaking changes. If you are upgrading from v2, see the [upgrade guide](UPGRADE.md).
 
 v3 has been rebuilt on an AST (Abstract Syntax Tree) architecture: each clause is represented as a typed node, and a dedicated compiler turns the tree into a valid Meilisearch filter string. Scout integration is opt-in via `ScoutAdapter`, keeping the core compiler fully independent of any search driver.
 
