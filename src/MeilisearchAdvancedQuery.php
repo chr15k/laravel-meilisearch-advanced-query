@@ -27,7 +27,7 @@ final class MeilisearchAdvancedQuery implements Query
 
     public static function query(): static
     {
-        return app(static::class);
+        return app(self::class);
     }
 
     public function forModel(string $modelClass): ScoutAdapter
@@ -197,6 +197,6 @@ final class MeilisearchAdvancedQuery implements Query
 
     private function newQuery(): static
     {
-        return new static($this->compiler);
+        return new self($this->compiler);
     }
 }
