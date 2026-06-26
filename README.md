@@ -1,6 +1,6 @@
 <picture>
     <source media="(prefers-color-scheme: dark)" srcset="art/header-dark.svg">
-    <img alt="Logo for php typos" src="art/header-light.svg">
+    <img alt="Logo for Meilisearch Advanced Query package" src="art/header-light.svg">
 </picture>
 
 <p align="center">
