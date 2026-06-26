@@ -1,6 +1,6 @@
 {
     "name": "chr15k/laravel-meilisearch-advanced-query",
-    "description": "Fluent AST-based query builder for Meilisearch filter expressions in Laravel.",
+    "description": "A fluent query builder for Meilisearch filter expressions in Laravel.",
     "license": "MIT",
     "keywords": [
         "laravel",
