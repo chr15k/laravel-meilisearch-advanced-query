@@ -369,6 +369,12 @@ composer test:unit    # Pest (with coverage)
 
 ---
 
+## Resources
+
+- [Building Advanced Meilisearch Queries in Laravel](https://medium.com/@chr15k/simplify-advanced-search-in-laravel-with-meilisearch-advanced-query-eee2308e7e43?sharedUserId=chr15k) — a practical walkthrough of the package with real-world examples
+
+---
+
 ## License
 
 MIT — see [LICENSE](LICENSE) for details.
