@@ -1,6 +1,6 @@
 <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="art/header-dark.png">
-    <img alt="Logo for php typos" src="art/header-light.png">
+    <source media="(prefers-color-scheme: dark)" srcset="art/header-dark.svg">
+    <img alt="Logo for php typos" src="art/header-light.svg">
 </picture>
 
 <p align="center">
@@ -14,12 +14,15 @@
 
 ------
 
-**Meilisearch Advanced Query** is a fluent query builder for Meilisearch filter expressions in Laravel. Handles compound conditions, nested groups, range queries, geo filters, and all Meilisearch-specific operators — without writing raw filter strings by hand.
+**Meilisearch Advanced Query** provides a fluent, expressive API for building Meilisearch filter
+expressions in Laravel — the same filters you'd otherwise write by hand when
+[customising Scout engine searches](https://laravel.com/docs/13.x/scout#customizing-engine-searches).
+
+It handles compound conditions, nested groups, range queries, geo filters, and
+Meilisearch-specific operators, keeping your code readable as queries grow in complexity.
 
 > [!WARNING]
 > v3 contains breaking changes. If you are upgrading from v2, see the [upgrade guide](UPGRADE.md).
-
-v3 has been rebuilt on an AST (Abstract Syntax Tree) architecture: each clause is represented as a typed node, and a dedicated compiler turns the tree into a valid Meilisearch filter string. Scout integration is opt-in via `ScoutAdapter`, keeping the core compiler fully independent of any search driver.
 
 ---
 
